@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>開発用インデックス | AI R&amp;D Center</title>
+  <meta name="description" content="ローカル開発サーバー・本番ビルドの確認用に各ページへのリンクをまとめた開発用インデックスページです。">
+  <style>
+    body {
+      margin: 0;
+      background: #05070c;
+      color: #e7ebf5;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Hiragino Kaku Gothic ProN", sans-serif;
+      padding: 48px 24px;
+    }
+    h1 {
+      font-size: 22px;
+    }
+    p {
+      color: #9aa4bd;
+      max-width: 60ch;
+    }
+    ul {
+      list-style: none;
+      padding: 0;
+      display: grid;
+      gap: 10px;
+      max-width: 420px;
+    }
+    a {
+      display: block;
+      padding: 12px 16px;
+      background: #10141f;
+      border: 1px solid #1f2636;
+      border-radius: 8px;
+      color: #7db0ff;
+      text-decoration: none;
+    }
+    a:hover {
+      border-color: #4f8cff;
+    }
+  </style>
+</head>
+<body>
+  <h1>AI R&amp;D Center 開発用インデックス</h1>
+  <p>
+    このページはArtisCMS3やGitHub Pagesの公開対象ではなく，<code>npm run dev</code> でのローカル確認や
+    <code>npm run build</code> の成果物確認のために各ページへのリンクをまとめたものです。
+  </p>
+  <ul>
+    <li><a href="/src/pages/top/index.html">トップ</a></li>
+    <li><a href="/src/pages/news/index.html">ニュース</a></li>
+    <li><a href="/src/pages/facility/index.html">施設</a></li>
+    <li><a href="/src/pages/basic-research/index.html">基礎研究</a></li>
+    <li><a href="/src/pages/embedded/index.html">組込AI</a></li>
+    <li><a href="/src/pages/image/index.html">画像処理</a></li>
+    <li><a href="/src/pages/nlp/index.html">NLP</a></li>
+    <li><a href="/src/pages/reinforcement/index.html">強化学習</a></li>
+  </ul>
+</body>
+</html>

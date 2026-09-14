@@ -1,9 +1,15 @@
 {
   "name": "sit-ai-rd-center-homepage",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "private": true,
-  "description": "湘南工科大学 情報学部 AI R&D Center 紹介ページ（ArtisCMS3埋め込みHTML用）",
+  "description": "湘南工科大学 情報学部 AI R&D Center 紹介ページ（Vite + GitHub Pages + ArtisCMS3 iframe埋め込み用）",
+  "type": "module",
   "scripts": {
-    "build": "node build.js"
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "vite": "^5.4.0"
   }
 }

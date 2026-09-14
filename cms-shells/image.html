@@ -1,0 +1,31 @@
+<!--
+  AI R&D Center - 画像処理ページ埋め込み用iframeシェル
+  ArtisCMS3の「埋め込みHTML」欄に、このファイルの中身をそのまま貼り付けてください。
+  貼り付け先ページ： /faculties/research-center/ai_rd_center/image/
+
+  このファイルはUTF-8（BOMなし）で保存されています。貼り付け先のCMS編集画面の
+  文字コード設定がUTF-8以外の場合、貼り付け後に文字化けする可能性があるため、
+  貼り付け後に必ずプレビューで日本語表示を確認してください。
+-->
+<div class="ai-rd-center-embed">
+  <iframe
+    id="ai-rd-center-iframe-image"
+    src="https://yryo1005.github.io/SIT-AIRD-Center-Homepage/src/pages/image/index.html"
+    title="AI R&D Center 画像処理"
+    style="width:100%;border:0;display:block;min-height:600px;"
+    loading="lazy"
+  ></iframe>
+</div>
+<script>
+(function () {
+  var iframe = document.getElementById("ai-rd-center-iframe-image");
+  if (!iframe) return;
+  window.addEventListener("message", function (event) {
+    var data = event.data;
+    if (!data || data.type !== "ai-rd-center:height") return;
+    if (typeof data.height === "number" && data.height > 0) {
+      iframe.style.height = data.height + "px";
+    }
+  });
+})();
+</script>

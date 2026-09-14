@@ -1,137 +1,160 @@
-# document.md：AI R&D Center Webサイト再構築プロジェクト
+# document.md：AI R&D Center Webサイト再構築プロジェクト（v2：Vite + GitHub Pages + iframe）
 
-本ドキュメントは，本プロジェクトで作成したプログラム・文書の役割，依存関係，実行方法を記述する．対応する指示書は`.orders/order_001.md`，実施レポートは`.reports/report_001.md`である．
+本ドキュメントは，本プロジェクトで作成したプログラム・文書の役割，依存関係，実行方法を記述する．対応する指示書は`.orders/order_001.md`（v1：ArtisCMS3直接貼り付け版）および`.orders/order_002.md`（v2：Vite + GitHub Pages + iframe版），実施レポートは`.reports/report_001.md`・`.reports/report_002.md`である．
+
+v2では，v1で採用していた「build.jsでCSS/JSをインライン展開し，1ページ1ファイルのHTMLフラグメントをArtisCMS3へ直接貼り付ける」方式を廃止し，「GitHub Pagesで本体をホストし，ArtisCMS3側は該当ページを表示するiframeシェルのみを貼り付ける」方式へ全面移行した．v1の`pages/`・`shared/`・`build.js`・`dist/`は本移行に伴い削除している．
 
 ## 1. ディレクトリ・ファイルの役割
 
 | パス | 役割 |
 | :--- | :--- |
-| `shared/style.css` | 全ページ共通のスタイルシート．ダークテーマ・青アクセントの配色，タイポグラフィ，カード・アコーディオン・タブ等のコンポーネントを定義する． |
-| `shared/script.js` | 全ページ共通のスクリプト．ナビゲーション開閉，スクロール進捗バー，ニュースティッカー，タブ切り替え，アコーディオン開閉を制御する． |
-| `pages/*/index.html` | 各ページのHTMLソース（8ページ）．`<html>`/`<head>`/`<body>`を持たないフラグメントで，末尾に`shared/`を参照する`<link>`・`<script>`タグを持つ． |
-| `build.js` | `pages/`配下を走査し，`shared/`の中身をインライン展開して`dist/`へ出力するビルドスクリプト．Node.js標準機能のみで動作する． |
-| `dist/*.html` | `node build.js`実行後に生成される，外部依存のない単一HTMLファイル．ArtisCMS3の「埋め込みHTML」欄にそのまま貼り付けられる． |
-| `package.json` | `npm run build`で`node build.js`を実行できるようにするための最小限の定義．依存パッケージはない． |
-| `README.md` | フォルダ構成，ビルド方法，ローカルでの確認方法，ArtisCMS3側URLとの対応表（運用者記入欄）を記載する運用者向け文書． |
-| `.orders/order_001.md` | 本プロジェクトの指示書． |
-| `.reports/report_001.md` | 本プロジェクトの実施レポート． |
+| `src/shared/style.css` | 全ページ共通のスタイルシート．ダークテーマ・青アクセントの配色，タイポグラフィ，カード・アコーディオン・タブ等のコンポーネントを定義する．内容はv1の`shared/style.css`を踏襲している． |
+| `src/shared/script.js` | 全ページ共通のスクリプト．ナビゲーション開閉，スクロール進捗バー，ニュースティッカー，タブ切り替え，アコーディオン開閉に加え，v2で追加した「iframe埋め込み時に本文の高さを親ウィンドウへ通知する処理」を含む． |
+| `src/pages/*/index.html` | 各ページのHTMLソース（8ページ）．`<!DOCTYPE html>`から始まる完全なHTMLドキュメントで，`<head>`の最初の子要素として`<meta charset="UTF-8">`を宣言する．内部リンクはすべてルート相対パス＋`target="_top"`． |
+| `index.html`（リポジトリルート） | ローカル確認専用の開発用インデックスページ．各ページへのリンク一覧を表示する．CMS・本番公開の対象ではない． |
+| `vite.config.js` | Viteのビルド設定．`src/pages/*/index.html`（8ファイル）とルートの`index.html`を複数エントリとして`dist/`へビルドする．GitHub Pagesのサブパス公開に対応するため，`mode`が`"production"`のとき（`vite build`・`vite preview`）のみ`base`を`/SIT-AIRD-Center-Homepage/`に設定する． |
+| `cms-shells/*.html` | ArtisCMS3の「埋め込みHTML」欄に貼り付けるための，ページごとの短いiframeシェル（8ファイル）．GitHub PagesのURLを`src`に持つ`iframe`と，高さ調整用の`postMessage`受信スクリプトから成る． |
+| `.github/workflows/deploy.yml` | `main`ブランチへのpush時に`npm ci` → `npm run build` → GitHub Pagesへデプロイを自動実行するGitHub Actionsワークフロー． |
+| `package.json` / `package-lock.json` | Vite関連の依存関係定義．`npm run dev` / `npm run build` / `npm run preview`を提供する． |
+| `README.md` | フォルダ構成，配信アーキテクチャ，ローカルでの動作確認方法，本番ビルド手順，GitHub Pages公開URL，cms-shellsの使い方，ArtisCMS3側URLとの対応表（運用者記入欄）を記載する運用者向け文書． |
+| `.orders/order_001.md`・`.orders/order_002.md` | 本プロジェクトの指示書（v1・v2）． |
+| `.reports/report_001.md`・`.reports/report_002.md` | 本プロジェクトの実施レポート（v1・v2）． |
 
 ## 2. プログラム間の依存関係
 
 ```mermaid
 flowchart TD
-    A["pages/top/index.html"] -->|"link rel=stylesheet"| S["shared/style.css"]
-    A -->|"script src"| J["shared/script.js"]
-    B["pages/news/index.html"] --> S
+    IDX["index.html（開発用インデックス）"] -->|"link rel=stylesheet"| S["src/shared/style.css"]
+    A["src/pages/top/index.html"] --> S
+    A -->|"script type=module src"| J["src/shared/script.js"]
+    B["src/pages/news/index.html"] --> S
     B --> J
-    C["pages/facility/index.html"] --> S
+    C["src/pages/facility/index.html"] --> S
     C --> J
-    D["pages/basic-research/index.html"] --> S
+    D["src/pages/basic-research/index.html"] --> S
     D --> J
-    E["pages/embedded/index.html"] --> S
+    E["src/pages/embedded/index.html"] --> S
     E --> J
-    F["pages/image/index.html"] --> S
+    F["src/pages/image/index.html"] --> S
     F --> J
-    G["pages/nlp/index.html"] --> S
+    G["src/pages/nlp/index.html"] --> S
     G --> J
-    H["pages/reinforcement/index.html"] --> S
+    H["src/pages/reinforcement/index.html"] --> S
     H --> J
 
-    A & B & C & D & E & F & G & H --> BUILD["build.js"]
-    S --> BUILD
-    J --> BUILD
+    IDX & A & B & C & D & E & F & G & H --> VITE["vite build（vite.config.jsのrollupOptions.input）"]
+    VITE -->|"CSS/JSをハッシュ付きファイルへバンドルし出力"| DIST["dist/（GitHub Pagesへ配信する成果物）"]
 
-    BUILD -->|"style/scriptをインライン展開して書き出し"| OUT["dist/*.html（8ファイル）"]
+    DIST -->|"GitHub Actions（deploy.yml）がpush時に自動デプロイ"| PAGES["GitHub Pages（yryo1005.github.io/SIT-AIRD-Center-Homepage/...）"]
+
+    PAGES -->|"iframe src"| SHELL_TOP["cms-shells/top.html"]
+    PAGES --> SHELL_NEWS["cms-shells/news.html"]
+    PAGES --> SHELL_ETC["cms-shells/（他6ファイル）"]
+
+    SHELL_TOP -->|"貼り付け"| CMS["ArtisCMS3側の各ページ（埋め込みHTML欄）"]
+    SHELL_NEWS --> CMS
+    SHELL_ETC --> CMS
+
+    J -.->|"window.parent.postMessage(height)"| SHELL_TOP
+    J -.-> SHELL_NEWS
+    J -.-> SHELL_ETC
 ```
 
-`build.js`内の主要な関数と処理の流れは次のとおりである．
+`src/shared/script.js`内の主要な関数と処理の流れは次のとおりである．
 
 ```mermaid
 flowchart LR
-    MAIN["main()"] -->|"pages/配下のディレクトリ名を列挙"| LOOP["pageNames.forEach(buildPage)"]
-    LOOP --> BP["buildPage(pageName)"]
-    BP --> RH["fs.readFileSync(index.html)"]
-    RH --> IS["inlineStylesheets(html, pageDir)"]
-    IS --> IJ["inlineScripts(html, pageDir)"]
-    IJ --> WR["fs.writeFileSync(dist/pageName.html)"]
-    IS -. "内部で呼び出し" .-> RF["readReferencedFile(pageDir, href)"]
-    IJ -. "内部で呼び出し" .-> RF
+    DCL["DOMContentLoadedイベント"] --> NAV["initNavToggle()"]
+    DCL --> SCROLL["initScrollProgress()"]
+    DCL --> TICKER["initNewsTicker()"]
+    DCL --> TABS["initTabs()"]
+    DCL --> ACC["initAccordions()"]
+    DCL --> RESIZE["initIframeHeightReporter()"]
+
+    RESIZE -->|"window.self !== window.top のときのみ動作"| OBS["ResizeObserver(document.body)"]
+    OBS -->|"サイズ変化を検知するたび"| POST["postHeight()"]
+    POST -->|"window.parent.postMessage"| PARENT["親ウィンドウ（cms-shells/側）"]
 ```
 
-- `main()`：`dist/`ディレクトリを作成し，`pages/`直下のディレクトリ名を列挙して`buildPage`を順次呼び出すエントリポイント．
-- `buildPage(pageName)`：1ページ分の`index.html`を読み込み，スタイル・スクリプトのインライン展開を行ったうえで`dist/{pageName}.html`へ書き出す．
-- `inlineStylesheets(html, pageDir)`：`<link rel="stylesheet" href="...">`を正規表現で検出し，`readReferencedFile`で読み込んだCSSの中身を`<style>`タグとして埋め込む．
-- `inlineScripts(html, pageDir)`：`<script src="...">`を正規表現で検出し，`readReferencedFile`で読み込んだJSの中身を`<script>`タグとして埋め込む．
-- `readReferencedFile(pageDir, relativeHref)`：ページのディレクトリを起点とした相対パスから，参照先ファイルの中身をUTF-8テキストとして読み込む共通処理．
+- `initNavToggle`：ハンバーガーメニューの開閉．
+- `initScrollProgress`：スクロール量に応じた進捗バーの幅更新．
+- `initNewsTicker`：`prefers-reduced-motion`を考慮した上で，ニュースティッカーの中身を複製しシームレスループを実現．
+- `initTabs`：`data-tabs`属性を持つタブUIの切り替え．
+- `initAccordions`：業績一覧等のアコーディオン開閉．
+- `initIframeHeightReporter`：v2で追加．`window.self !== window.top`（iframe埋め込み状態）のときのみ動作し，`ResizeObserver`で本文（`document.body`）の高さ変化を検知して`postMessage`で親ウィンドウへ通知する．GitHub Pagesを単独で開いた場合は何も行わない．
+
+`cms-shells/*.html`側は，対応する`message`イベント（`type: "ai-rd-center:height"`）を受信し，`iframe`要素の`style.height`を更新するインラインスクリプトを持つ．
 
 ## 3. 外部モジュールとの依存関係
 
-`build.js`はNode.js標準モジュール（`fs`，`path`）のみに依存しており，npmパッケージへの依存はない．`node build.js`のみでビルドが完了する．
-
-`dist/`配下の出力ファイル自体も，外部CDN（Google Fonts，jsDelivr等）への依存を持たない．画像のみ，湘南工科大学公式サイト（`https://www.shonan-it.ac.jp/`）上の既存画像を絶対URLで参照している．
+- ビルドツールとして`vite`（`devDependencies`）に依存する．`npm install`で導入する．
+- サイト本体（`src/pages/*/index.html`が生成する成果物）は，外部CDN（Google Fonts，jsDelivr，GSAP等）へ依存していない．アニメーションはGSAP等を使わず，素のCSS（`@keyframes`，`transition`）とJavaScript（`ResizeObserver`，`matchMedia`）のみで実装している．
+- 画像のみ，湘南工科大学公式サイト（`https://www.shonan-it.ac.jp/`）上の既存画像を絶対URLで参照している．
 
 ## 4. Node.js環境の構築方法
 
-本プロジェクトは特別な仮想環境を必要としない．Node.js（標準機能のみ使用，バージョンは14以降であれば動作する想定）がインストールされていれば，追加のパッケージインストールなしで次のコマンドを実行できる．
-
 ```bash
-node build.js
-# または
-npm run build
+npm install
 ```
 
-開発中の動作確認時，実行環境に`node`コマンドが存在しなかったため，Node.js v20.17.0のLinux x64バイナリをユーザー権限で`/tmp`配下にダウンロード・展開し，一時的にPATHへ追加して使用した．システムへの恒久的なインストールは行っていない．運用環境で`node`コマンドが利用できない場合は，同様の方法か，通常のNode.jsインストール手順（公式サイトやパッケージマネージャ経由）で導入する必要がある．
+上記でVite等の開発依存関係が`node_modules/`にインストールされる．`node_modules/`は`.gitignore`で除外している．
+
+開発中の動作確認時，実行環境に`node`コマンドが存在しなかったため，Node.js v20.17.0のLinux x64バイナリをユーザー権限で`/tmp`配下にダウンロード・展開し，一時的にPATHへ追加して使用した．システムへの恒久的なインストールは行っていない．GitHub Actions上ではv2で追加した`.github/workflows/deploy.yml`が`actions/setup-node@v4`でNode.js 20を用意するため，この問題は発生しない．
 
 ## 5. プログラムの実行方法
 
 ```bash
-cd project  # 本リポジトリのルート
-node build.js
+# ローカル開発サーバー
+npm run dev
+
+# 本番ビルド（dist/に出力）
+npm run build
+
+# 本番ビルドのプレビュー（GitHub Pagesと同じbase設定で確認）
+npm run preview
 ```
 
-実行すると，`dist/`配下に以下8ファイルが生成される．
+`vite.config.js`の`rollupOptions.input`にエントリとして列挙した9つのHTMLファイル（開発用インデックス1つ＋ページ8つ）が，それぞれ`dist/`配下の対応するパス（例：`dist/src/pages/top/index.html`）へ出力される．出力パスはVite側の仕様により，ソースファイルの`root`（プロジェクトルート）からの相対パスがそのまま使われる（`rollupOptions.input`のオブジェクトキーは出力ファイル名を決定しない）．
 
-```
-dist/top.html
-dist/news.html
-dist/facility.html
-dist/basic-research.html
-dist/embedded.html
-dist/image.html
-dist/nlp.html
-dist/reinforcement.html
-```
+## 6. デプロイ方法（GitHub Actions → GitHub Pages）
 
-## 6. ローカルでの表示確認方法
+`main`ブランチへのpush，または手動実行（`workflow_dispatch`）により，`.github/workflows/deploy.yml`が次を実行する．
 
-`dist/`配下のファイルは`<html>`/`<head>`を持たないHTMLフラグメントであるため，ダブルクリックで直接開くのではなく，簡易HTTPサーバーで配信して確認する．文字化けを避けるため，`Content-Type: text/html; charset=utf-8`を明示できる配信方法を用いることが望ましい（詳細は`README.md`を参照）．
+1. `actions/checkout`でリポジトリを取得
+2. `actions/setup-node`でNode.js 20を用意
+3. `npm ci`で依存関係をインストール（`package-lock.json`を使用するため，再現性のあるインストールになる）
+4. `npm run build`で`dist/`を生成
+5. `actions/upload-pages-artifact`で`dist/`をアーティファクトとしてアップロード
+6. `actions/deploy-pages`でGitHub Pagesへデプロイ
 
-```bash
-cd dist
-python3 -m http.server 8000
-# ブラウザで http://localhost:8000/top.html 等にアクセス
-```
+初回のみ，リポジトリのSettings → PagesでSourceを「GitHub Actions」に設定する必要がある（運用者の作業）．
 
-## 7. 実験結果・成果物の保存場所
+## 7. ローカルでの表示確認方法
+
+`README.md`の「ローカルでの動作確認方法」を参照．開発サーバー（`npm run dev`）と本番ビルドのプレビュー（`npm run preview`）の双方で，Playwright（Chromium）を用いて日本語表示・レイアウト崩れ・コンソールエラーの有無を確認済みである．
+
+さらに，v2で追加したiframe高さ自動調整機構（`postMessage`）についても，`npm run build`の成果物を`vite preview`で配信し，別オリジンの簡易HTTPサーバー上に置いたテスト用iframeシェルから読み込む形で，実際にクロスオリジンでの高さ通知が機能することを確認済みである．
+
+## 8. 実験結果・成果物の保存場所
 
 本プロジェクトは機械学習実験を伴わないため，学習ログやモデル等の成果物は存在しない．成果物は次のとおりである．
 
-- ソースコード：`shared/`，`pages/`，`build.js`
-- ビルド成果物：`dist/`（`node build.js`実行のたびに再生成される）
+- ソースコード：`src/`，`vite.config.js`，`.github/workflows/deploy.yml`，`cms-shells/`
+- ビルド成果物：`dist/`（`npm run build`実行のたびに再生成される，`.gitignore`によりリポジトリには含めない）
 - 表示確認に用いたスクリーンショット：本セッションの一時領域にのみ保存しており，リポジトリ内には含めていない
 
-## 8. 文書・レポートの保存場所
+## 9. 文書・レポートの保存場所
 
-- 指示書：`.orders/order_001.md`
-- 実施レポート：`.reports/report_001.md`
+- 指示書：`.orders/order_001.md`（v1），`.orders/order_002.md`（v2）
+- 実施レポート：`.reports/report_001.md`（v1），`.reports/report_002.md`（v2）
 - 本ドキュメント：`document.md`（リポジトリルート）
 
-## 9. 必要なAPIキー・設定ファイル
+## 10. 必要なAPIキー・設定ファイル
 
-本プロジェクトはAPIキーを必要としない．`tokens.json`および`tokens.json.enc`はリポジトリ内に存在するが，本プロジェクトのビルド・表示確認では使用していない．`tokens.json`は`.gitignore`により追跡対象外である．
+本プロジェクトはAPIキーを必要としない．`tokens.json`・`tokens.json.enc`はリポジトリ内に存在するが，本プロジェクトのビルド・デプロイでは使用していない．`tokens.json`は`.gitignore`により追跡対象外である．GitHub Actionsのデプロイには，GitHub Pages用に自動発行される`GITHUB_TOKEN`（`actions/deploy-pages`が内部で使用）以外の秘匿情報は不要である．
 
-## 10. Git管理上の注意事項
+## 11. Git管理上の注意事項
 
-- `tokens.json`は`.gitignore`に登録済みであり，コミット対象外である．
-- `dist/`は`build.js`実行のたびに再生成される成果物であるため，リポジトリへコミットするかどうかは運用方針に応じて判断する（本プロジェクトでは`.gitignore`に追加していないため，現状はコミット対象に含まれる）．
-- ビルド確認のためにダウンロードしたNode.jsバイナリは`/tmp`配下の一時領域に配置したものであり，リポジトリには含まれていない．
+- `tokens.json`，`node_modules/`，`dist/`は`.gitignore`に登録済みであり，コミット対象外である．
+- `package-lock.json`はGitHub Actionsの`npm ci`が依存関係の再現性を担保するために必要なため，コミット対象に含めている．
+- v1で作成した`pages/`・`shared/`・`build.js`・（v1の）`dist/`は，v2への移行に伴い削除済みである．v1の実装内容は`git log`および`.reports/report_001.md`で参照できる．
