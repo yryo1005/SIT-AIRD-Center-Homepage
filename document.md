@@ -1,6 +1,8 @@
 # document.md：AI R&D Center Webサイト再構築プロジェクト（v2：Vite + GitHub Pages + iframe）
 
-本ドキュメントは，本プロジェクトで作成したプログラム・文書の役割，依存関係，実行方法を記述する．対応する指示書は`.orders/order_001.md`（v1：ArtisCMS3直接貼り付け版），`.orders/order_002.md`（v2：Vite + GitHub Pages + iframe版），`.orders/order_003.md`（v2追加修正：公開URL修正・画像表示修正），実施レポートは`.reports/report_001.md`〜`.reports/report_003.md`である．
+本ドキュメントは，本プロジェクトで作成したプログラム・文書の役割，依存関係，実行方法を記述する．対応する指示書は`.orders/order_001.md`（v1：ArtisCMS3直接貼り付け版），`.orders/order_002.md`（v2：Vite + GitHub Pages + iframe版），`.orders/order_003.md`（v2追加修正：公開URL修正・画像表示修正），`.orders/order_004.md`（ガイダンス資料の取り込み），実施レポートは`.reports/report_001.md`〜`.reports/report_004.md`である．
+
+`.orders/order_004.md`への対応で，`references/`配下のガイダンス資料（PPTX/PDF）から抽出したテキスト・画像を，公式サイトの内容を削除・改変することなくサイトへ追加した．写真は`src/assets/images/`に配置し，Viteの標準アセットパイプラインで処理される．`references/`自体は大容量ファイル（最大255MB，GitHubの単一ファイル上限100MBを超過）を含むため`.gitignore`に追加し，リポジトリには含めていない（詳細は`.reports/report_004.md`を参照）．
 
 v2では，v1で採用していた「build.jsでCSS/JSをインライン展開し，1ページ1ファイルのHTMLフラグメントをArtisCMS3へ直接貼り付ける」方式を廃止し，「GitHub Pagesで本体をホストし，ArtisCMS3側は該当ページを表示するiframeシェルのみを貼り付ける」方式へ全面移行した．v1の`pages/`・`shared/`・`build.js`・`dist/`は本移行に伴い削除している．
 
@@ -22,8 +24,9 @@ v2では，v1で採用していた「build.jsでCSS/JSをインライン展開�
 | `.github/workflows/deploy.yml` | `main`ブランチへのpush時に`npm ci` → `npm run build` → GitHub Pagesへデプロイを自動実行するGitHub Actionsワークフロー． |
 | `package.json` / `package-lock.json` | Vite関連の依存関係定義．`npm run dev` / `npm run build` / `npm run preview` / `npm run generate:cms-shells` / `npm run verify:cms-shells` / `npm run verify:cms-shells:live`を提供する． |
 | `README.md` | フォルダ構成，配信アーキテクチャ，ベースURLの単一管理（site.config.js），ローカルでの動作確認方法，本番ビルド手順，GitHub Pages公開URL，cms-shellsの使い方，ArtisCMS3側URLとの対応表（運用者記入欄）を記載する運用者向け文書． |
-| `.orders/order_001.md`〜`.orders/order_003.md` | 本プロジェクトの指示書（v1，v2，v2追加修正）． |
-| `.reports/report_001.md`〜`.reports/report_003.md` | 本プロジェクトの実施レポート（v1，v2，v2追加修正）． |
+| `src/assets/images/faculty/`・`src/assets/images/facility/` | ガイダンス資料（PPTX）から元画質のまま抽出した教員写真・施設写真．Viteの標準アセットパイプラインで処理される（order_004対応で追加）． |
+| `.orders/order_001.md`〜`.orders/order_004.md` | 本プロジェクトの指示書（v1，v2，v2追加修正，ガイダンス資料取り込み）． |
+| `.reports/report_001.md`〜`.reports/report_004.md` | 本プロジェクトの実施レポート（v1，v2，v2追加修正，ガイダンス資料取り込み）． |
 
 ## 2. プログラム間の依存関係
 
@@ -150,8 +153,8 @@ npm run preview
 
 ## 9. 文書・レポートの保存場所
 
-- 指示書：`.orders/order_001.md`（v1），`.orders/order_002.md`（v2），`.orders/order_003.md`（v2追加修正）
-- 実施レポート：`.reports/report_001.md`（v1），`.reports/report_002.md`（v2），`.reports/report_003.md`（v2追加修正）
+- 指示書：`.orders/order_001.md`（v1），`.orders/order_002.md`（v2），`.orders/order_003.md`（v2追加修正），`.orders/order_004.md`（ガイダンス資料の取り込み）
+- 実施レポート：`.reports/report_001.md`（v1），`.reports/report_002.md`（v2），`.reports/report_003.md`（v2追加修正），`.reports/report_004.md`（ガイダンス資料の取り込み）
 - 本ドキュメント：`document.md`（リポジトリルート）
 
 ## 10. 必要なAPIキー・設定ファイル
@@ -188,3 +191,12 @@ npm run preview
 4. 以上より，観測された失敗はホットリンク対策（Refererチェック）による恒常的な拒否ではなく，一時的なネットワーク不安定性である可能性が高いと判断した。ただし，実際のユーザー環境やCMS埋め込み時のネットワーク条件でReferer起因の拒否が発生する可能性を完全には排除できないため，指示書が提示する予防策に従い，全`<img>`タグに`referrerpolicy="no-referrer"`属性を追加した。この変更は，別オリジンから画像を読み込む際にRefererヘッダーを送信しないようにする安全側の対応であり，副作用はない。
 
 推測にもとづく断定的な原因確定や，スコープ外とされているGitHub Releaseへの画像移設は行っていない。詳細な検証ログは`.reports/report_003.md`を参照。
+
+## 13. ガイダンス資料の取り込み（order_004）の内容
+
+`references/`ディレクトリにアップロードされたポスター（PPTX）・ガイダンス資料（PPTX）・説明会案内やコース方針（PDF）から，テキスト・画像を抽出し，公式サイトの内容を削除・改変することなくサイトへ追加した。
+
+- **`references/`はGit管理対象外**である。ポスターPPTXが255MBとGitHubの単一ファイル上限（100MB）を超えるため，`.gitignore`に追加した。抽出済みの内容は`src/`と`.reports/report_004.md`に反映されているため，リポジトリ内で出典を追跡できる。
+- 教員写真6点・施設写真5点（合計約12MB）を`src/assets/images/`に元画質のまま配置し，Viteの標準アセットパイプラインで処理されることを確認した。
+- 個人が特定できる写真（氏名入りポスター前の学生の近接写真，私的な懇親会の集合写真）は，公開Webサイトでの利用に関する同意が明確でないため，掲載を見送った。
+- 資料間で数値に食い違いがあった項目（研究業績件数：公式42件／ポスター49件／ガイダンス34件，学生人数：ポスター40名／ガイダンス38名）は，ユーザーの指示にもとづき「教員は公式サイト，それ以外はポスターの数値」を採用し，公式サイト由来の個別業績一覧（42件）は変更せず，ヘッドライン統計にのみポスターの数値を採用したうえで両者の関係を注記した。詳細は`.reports/report_004.md`を参照。

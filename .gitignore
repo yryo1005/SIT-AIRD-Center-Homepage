@@ -1,3 +1,8 @@
 tokens.json
 node_modules/
 dist/
+
+# ガイダンス資料等の原本（PPTX/PDF）。大容量ファイル（最大255MB）を含み、
+# GitHubの単一ファイル上限（100MB）を超えるためリポジトリには含めない。
+# 抽出済みのテキスト・画像は src/ や .reports/ 側に反映済み。
+references/
