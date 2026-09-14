@@ -93,3 +93,57 @@ export const PAGES = [
 export function pageUrl(page) {
   return `${SITE_BASE_URL}${page.srcPath}`;
 }
+
+/**
+ * ページ間の内部リンク（ヘッダー・フッターのナビゲーション等）をどちらの前提で
+ * 生成するかを切り替えるためのモード定義．
+ *
+ *   "github-pages" : GitHub Pages上で単独ページとして直接開く前提．
+ *                     ページ同士は兄弟ディレクトリ（src/pages/<key>/index.html）なので，
+ *                     "../<key>/index.html" 形式のルート相対でないパスで自己完結する．
+ *                     target="_top" は付与しない（iframeに入っていないため不要）．
+ *   "cms"          : ArtisCMS3の埋め込みHTML（iframe）内で表示される前提．
+ *                     大学ドメインの絶対パス（cmsPath）を使い，iframeを飛び出すために
+ *                     target="_top" を付与する．
+ *
+ * 現在このリポジトリのsrc/pages/ 配下の各ページは "github-pages" モードで書かれている
+ * （デバッグをGitHub Pages上で直接行う方針のため）。CMSへ埋め込む段階になったら，
+ * `node scripts/set-link-mode.js cms` を実行してこの前提に一括で切り替えられる。
+ * 逆に `node scripts/set-link-mode.js github-pages` で今の状態に戻せる。
+ */
+export const LINK_MODES = ["github-pages", "cms"];
+
+/**
+ * 内部リンク1件分（トップページのセクションアンカーを含む）の定義．
+ * key       : リンク先のPAGES上のkey
+ * hash      : ページ内アンカーへのリンクの場合のみ指定（例: "faculty"）
+ */
+export const INTERNAL_LINKS = [
+  ...PAGES.map((p) => ({ key: p.key })),
+  { key: "top", hash: "faculty" },
+  { key: "top", hash: "contact" },
+];
+
+/**
+ * 内部リンク1件について，指定したモードでのhref・target属性を算出する関数．
+ * 引数:
+ *   link (object): { key, hash? } の形（INTERNAL_LINKSの要素，またはそれと同じ形のオブジェクト）．
+ *   mode (string): "github-pages" または "cms"．
+ * 戻り値:
+ *   { href: string, target: string | null }
+ */
+export function resolveInternalLink(link, mode) {
+  const page = PAGES.find((p) => p.key === link.key);
+  if (!page) {
+    throw new Error(`未知のページkeyです: ${link.key}`);
+  }
+  const hashSuffix = link.hash ? `#${link.hash}` : "";
+
+  if (mode === "cms") {
+    return { href: `${page.cmsPath}${hashSuffix}`, target: "_top" };
+  }
+  if (mode === "github-pages") {
+    return { href: `../${page.key}/index.html${hashSuffix}`, target: null };
+  }
+  throw new Error(`未知のLINK_MODEです: ${mode}（"github-pages" または "cms" を指定してください）`);
+}

@@ -2,6 +2,8 @@
 
 湘南工科大学 情報学部 AI R&D Centerの紹介ページのソースです。本体（HTML/CSS/JS）はGitHub Pagesでホストし、大学のCMS（ArtisCMS3）側の各ページには、そのGitHub Pagesの該当ページを表示する`iframe`だけを貼り付けます。以降は`main`ブランチへのpushだけでサイト全体が更新されます。
 
+デザインは白背景＋青アクセントのライトテーマで、見出しにFraunces（セリフ体）、本文にInter（サンセリフ）、日付・ラベル・数値にIBM Plex Mono（等幅）を使用しています。現在は**GitHub Pages上で単独ページとして直接デバッグする運用**を前提にしており（`site.config.js`の`LINK_MODES`を参照）、ArtisCMS3のiframeへの実際の貼り付け作業は次フェーズで行います。
+
 ## 配信アーキテクチャ
 
 ```
@@ -15,7 +17,7 @@ URLを表示するだけのiframeシェル（cms-shells/配下）を持ってい
 以降はpushするだけで、CMS側は一切触らずに全ページが更新される
 ```
 
-- iframe内のページ内リンクはすべて`target="_top"`付きのルート相対パスであり、クリックするとiframeを飛び出してCMS側の実URLへ遷移します。
+- CMSのiframeに埋め込んだ状態では、ページ内リンクはすべて`target="_top"`付きのルート相対パス（大学ドメインの絶対パス）であり、クリックするとiframeを飛び出してCMS側の実URLへ遷移します。この形は`node scripts/set-link-mode.js cms`で生成します（詳細は「内部リンクのモード切り替え」を参照）。
 - `src/shared/script.js`が`ResizeObserver`で本文の高さを検知し、`window.parent.postMessage({ type: "ai-rd-center:height", height }, "*")`で親ウィンドウへ通知します。`cms-shells/`側のスクリプトがこれを受信し、iframeの高さを自動調整します。
 - iframeの中身は検索エンジンに正しく評価されない可能性があります。ArtisCMS3側の通常の編集エリアにも1〜2文程度の実テキストを直接入力しておくことを推奨します（**これは運用者が手動で行う作業であり、本リポジトリの実装対象ではありません**）。
 
@@ -25,8 +27,9 @@ URLを表示するだけのiframeシェル（cms-shells/配下）を持ってい
 project/
 ├── src/
 │   ├── shared/
-│   │   ├── style.css     ← 全ページ共通スタイル（ダークテーマ・青アクセント）
+│   │   ├── style.css     ← 全ページ共通スタイル（白＋青のライトテーマ）
 │   │   └── script.js     ← 共通スクリプト（ナビ開閉・進捗バー・ティッカー・タブ・アコーディオン・iframe高さ通知）
+│   ├── assets/images/    ← ガイダンス資料等から抽出した教員写真・施設写真
 │   └── pages/
 │       ├── top/index.html
 │       ├── news/index.html
@@ -47,7 +50,8 @@ project/
 │   └── reinforcement.html
 ├── scripts/
 │   ├── generate-cms-shells.js   ← site.config.jsからcms-shells/*.htmlを生成
-│   └── verify-cms-shells.js     ← cms-shells/README.mdとsite.config.jsの整合性・公開URLの疎通を検証
+│   ├── verify-cms-shells.js     ← cms-shells/README.mdとsite.config.jsの整合性・公開URLの疎通を検証
+│   └── set-link-mode.js         ← 内部リンクをgithub-pages/cmsモード間で一括切り替え
 ├── site.config.js         ← GitHub PagesのベースURL・ページ一覧の単一情報源（後述）
 ├── index.html             ← ローカル確認専用の開発用インデックス（CMS/本番公開対象ではない）
 ├── .github/workflows/deploy.yml   ← pushでビルドしGitHub Pagesへ自動デプロイ
@@ -83,6 +87,22 @@ npm run verify:cms-shells:live
 
 `site.config.js`の`PAGES`にページを追加・変更した場合は、`npm run generate:cms-shells`を再実行してから`npm run verify:cms-shells:live`で最終確認してください。
 
+## 内部リンクのモード切り替え（github-pages ⇔ cms）
+
+ヘッダー・フッターのナビゲーションなど、サイト内の各ページを相互にリンクする`<a>`タグは、`data-link="<ページkey>"`（ページ内アンカーの場合はあわせて`data-hash="<アンカー名>"`）という属性を持っています。この属性が、リンクの「意味」を表す唯一の情報源です。実際の`href`・`target`属性の値は、`node scripts/set-link-mode.js <mode>`を実行することで、`data-link`/`data-hash`から機械的に再計算されます。
+
+```bash
+# GitHub Pages上で単独ページとして直接開く前提（現在のデフォルト）
+# ページ同士は "../<key>/index.html" という相対パスで結ばれ、target="_top" は付与しない
+node scripts/set-link-mode.js github-pages
+
+# ArtisCMS3のiframe埋め込みを前提にする
+# 大学ドメインの絶対パス（cmsPath）＋ target="_top" に一括変換する
+node scripts/set-link-mode.js cms
+```
+
+現在このリポジトリの`src/pages/*/index.html`は、デバッグをGitHub Pages上で直接行う方針（order_004・order_005）にもとづき`github-pages`モードで書かれています。ArtisCMS3への実際の埋め込み作業を行う段階になったら、`node scripts/set-link-mode.js cms`を実行するだけで、8ページ全ての内部リンクを一括でCMS向けの絶対パス＋`target="_top"`に切り替えられます。教員プロフィール・公式お問い合わせページなど`data-link`を持たない外部リンクは、どちらのモードでも書き換えの対象外です（常に`target="_top"`のまま）。
+
 ## ローカルでの動作確認方法
 
 ### セットアップ
@@ -108,7 +128,7 @@ npm run dev
 - `http://localhost:5173/src/pages/nlp/index.html`
 - `http://localhost:5173/src/pages/reinforcement/index.html`
 
-開発サーバーではページ内リンクに`target="_top"`が付いているため、開発サーバー単体でクリックするとブラウザタブ全体がその遷移先（`/faculties/...`という大学ドメインのパス）に飛ぼうとして404になります。ナビゲーションの見た目や個別ページの表示確認は問題なく行えますが、リンク遷移そのものは本番のCMS埋め込み環境（iframe内かつ`target="_top"`でCMSの実ページへ飛ぶ構成）で確認する必要がある点に注意してください。
+現在の内部リンクは`github-pages`モード（相対パス、`target="_top"`なし）になっているため、開発サーバー上でもヘッダー・フッターのナビゲーションをクリックしてそのままページ間を移動できます。CMSへの埋め込みを想定した動作を確認したい場合は、`node scripts/set-link-mode.js cms`を実行してから同様に確認してください（確認後は`node scripts/set-link-mode.js github-pages`で戻せます）。
 
 ### 本番ビルド
 
@@ -180,10 +200,11 @@ GitHub Pagesを初めて有効化する場合は、リポジトリの Settings �
 - `npm run build`によるViteのビルド出力で、日本語テキストが壊れていないことをブラウザ表示で確認済みです（本README作成時点のビルドで確認）。
 - `cms-shells/`配下のiframeシェルコードもUTF-8で記述されています。ただし、ArtisCMS3側の編集画面自体の文字コード設定がUTF-8以外の場合、貼り付け時に文字化けする可能性があります。貼り付け後は必ずCMS側のプレビューで日本語表示を確認してください。
 
-## 使用している技術・ライブラリ
+## デザイン・使用している技術
 
-- ビルドツール：Vite（`devDependencies`の`vite`のみ。GSAP等のアニメーションライブラリは今回は使用せず、素のJavaScript（`ResizeObserver`、イベントリスナー）で実装しています）
-- `prefers-reduced-motion: reduce`が有効な環境では、ニューストリッカーの複製アニメーションとスムーススクロールを無効化しています。
+- 配色は白背景＋青アクセントのライトテーマです。見出しにFraunces（セリフ体）、本文にInter（サンセリフ）、日付・ラベル・数値にIBM Plex Mono（等幅）を使用し、各ページの`<head>`でGoogle Fontsから読み込んでいます（`fonts.googleapis.com`・`fonts.gstatic.com`への外部リクエストが発生します）。
+- ビルドツール：Vite（`devDependencies`の`vite`のみ。GSAP等のアニメーションライブラリは使用せず、素のCSS（`@keyframes`）とJavaScript（`ResizeObserver`、イベントリスナー）でヒーローのSVGネットワーク描画アニメーション・タブ切り替え等を実装しています）
+- `prefers-reduced-motion: reduce`が有効な環境では、ヒーローのアニメーション・ニューストリッカーの複製アニメーション・スムーススクロールを無効化しています。
 
 ## その他の技術要件
 

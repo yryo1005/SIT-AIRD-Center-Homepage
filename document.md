@@ -1,6 +1,6 @@
 # document.md：AI R&D Center Webサイト再構築プロジェクト（v2：Vite + GitHub Pages + iframe）
 
-本ドキュメントは，本プロジェクトで作成したプログラム・文書の役割，依存関係，実行方法を記述する．対応する指示書は`.orders/order_001.md`（v1：ArtisCMS3直接貼り付け版），`.orders/order_002.md`（v2：Vite + GitHub Pages + iframe版），`.orders/order_003.md`（v2追加修正：公開URL修正・画像表示修正），`.orders/order_004.md`（ガイダンス資料の取り込み），実施レポートは`.reports/report_001.md`〜`.reports/report_004.md`である．
+本ドキュメントは，本プロジェクトで作成したプログラム・文書の役割，依存関係，実行方法を記述する．対応する指示書は`.orders/order_001.md`（v1：ArtisCMS3直接貼り付け版），`.orders/order_002.md`（v2：Vite + GitHub Pages + iframe版），`.orders/order_003.md`（v2追加修正：公開URL修正・画像表示修正），`.orders/order_004.md`（ガイダンス資料の取り込み），`.orders/order_005.md`（デザイン刷新・内部リンクのモード切り替え），実施レポートは`.reports/report_001.md`〜`.reports/report_005.md`である．
 
 `.orders/order_004.md`への対応で，`references/`配下のガイダンス資料（PPTX/PDF）から抽出したテキスト・画像を，公式サイトの内容を削除・改変することなくサイトへ追加した．写真は`src/assets/images/`に配置し，Viteの標準アセットパイプラインで処理される．`references/`自体は大容量ファイル（最大255MB，GitHubの単一ファイル上限100MBを超過）を含むため`.gitignore`に追加し，リポジトリには含めていない（詳細は`.reports/report_004.md`を参照）．
 
@@ -25,8 +25,9 @@ v2では，v1で採用していた「build.jsでCSS/JSをインライン展開�
 | `package.json` / `package-lock.json` | Vite関連の依存関係定義．`npm run dev` / `npm run build` / `npm run preview` / `npm run generate:cms-shells` / `npm run verify:cms-shells` / `npm run verify:cms-shells:live`を提供する． |
 | `README.md` | フォルダ構成，配信アーキテクチャ，ベースURLの単一管理（site.config.js），ローカルでの動作確認方法，本番ビルド手順，GitHub Pages公開URL，cms-shellsの使い方，ArtisCMS3側URLとの対応表（運用者記入欄）を記載する運用者向け文書． |
 | `src/assets/images/faculty/`・`src/assets/images/facility/` | ガイダンス資料（PPTX）から元画質のまま抽出した教員写真・施設写真．Viteの標準アセットパイプラインで処理される（order_004対応で追加）． |
-| `.orders/order_001.md`〜`.orders/order_004.md` | 本プロジェクトの指示書（v1，v2，v2追加修正，ガイダンス資料取り込み）． |
-| `.reports/report_001.md`〜`.reports/report_004.md` | 本プロジェクトの実施レポート（v1，v2，v2追加修正，ガイダンス資料取り込み）． |
+| `.orders/order_001.md`〜`.orders/order_005.md` | 本プロジェクトの指示書（v1，v2，v2追加修正，ガイダンス資料取り込み，デザイン刷新）． |
+| `.reports/report_001.md`〜`.reports/report_005.md` | 本プロジェクトの実施レポート（v1，v2，v2追加修正，ガイダンス資料取り込み，デザイン刷新）． |
+| `scripts/set-link-mode.js` | `data-link`/`data-hash`属性から，内部リンクのhref/targetをgithub-pages/cmsモードに応じて一括書き換えるスクリプト（order_005対応で追加）． |
 
 ## 2. プログラム間の依存関係
 
@@ -153,8 +154,8 @@ npm run preview
 
 ## 9. 文書・レポートの保存場所
 
-- 指示書：`.orders/order_001.md`（v1），`.orders/order_002.md`（v2），`.orders/order_003.md`（v2追加修正），`.orders/order_004.md`（ガイダンス資料の取り込み）
-- 実施レポート：`.reports/report_001.md`（v1），`.reports/report_002.md`（v2），`.reports/report_003.md`（v2追加修正），`.reports/report_004.md`（ガイダンス資料の取り込み）
+- 指示書：`.orders/order_001.md`（v1），`.orders/order_002.md`（v2），`.orders/order_003.md`（v2追加修正），`.orders/order_004.md`（ガイダンス資料の取り込み），`.orders/order_005.md`（デザイン刷新）
+- 実施レポート：`.reports/report_001.md`（v1），`.reports/report_002.md`（v2），`.reports/report_003.md`（v2追加修正），`.reports/report_004.md`（ガイダンス資料の取り込み），`.reports/report_005.md`（デザイン刷新）
 - 本ドキュメント：`document.md`（リポジトリルート）
 
 ## 10. 必要なAPIキー・設定ファイル
@@ -200,3 +201,27 @@ npm run preview
 - 教員写真6点・施設写真5点（合計約12MB）を`src/assets/images/`に元画質のまま配置し，Viteの標準アセットパイプラインで処理されることを確認した。
 - 個人が特定できる写真（氏名入りポスター前の学生の近接写真，私的な懇親会の集合写真）は，公開Webサイトでの利用に関する同意が明確でないため，掲載を見送った。
 - 資料間で数値に食い違いがあった項目（研究業績件数：公式42件／ポスター49件／ガイダンス34件，学生人数：ポスター40名／ガイダンス38名）は，ユーザーの指示にもとづき「教員は公式サイト，それ以外はポスターの数値」を採用し，公式サイト由来の個別業績一覧（42件）は変更せず，ヘッドライン統計にのみポスターの数値を採用したうえで両者の関係を注記した。詳細は`.reports/report_004.md`を参照。
+
+## 14. デザイン刷新・内部リンクのモード切り替え（order_005）の内容
+
+`.orders/order_005.md`は，ユーザーが提示したHTML/CSSのデザイン参考例（白＋青のライトテーマ，Fraunces／Inter／IBM Plex Monoの組み合わせ，SVGネットワークアニメーション付きヒーロー，タブ切り替え式UI，円形写真のメンバーグリッド等）にもとづき，サイト全体の構造・デザインを刷新する指示である。あわせて，「当面はGitHub Pages上で直接デバッグし，簡単にCMS前提に戻せるようにしてほしい」という指示に対応した。
+
+### 14.1 デザイン刷新
+
+- `src/shared/style.css`を全面的に書き直し，ダークテーマ（黒背景＋ライム／パープル）から，白背景＋青（`--accent:#1d4ed8`系）のライトテーマへ変更した。角丸は`--radius:2px`のシャープな矩形とした。
+- 各ページの`<head>`にGoogle Fonts（Fraunces・Inter・IBM Plex Mono）の`<link>`を追加した。
+- トップページのヒーローに，CSSアニメーションで線を描画するSVGネットワーク装飾（`.hero-net`）を追加した。`prefers-reduced-motion: reduce`環境ではアニメーションを無効化する。
+- 指導教員セクションを，カード型から3列グリッド＋円形グレースケール写真の「メンバーグリッド」（`.faculty-grid`）に変更した。
+- 施設ページを，5つのスペース（入口・エントランス，大会議室，小会議室，展示室，ヨギボーゾーン）をタブ切り替えで閲覧する構成（`.tab-bar`＋`.tab-panel`）に変更した。既存の`initTabs()`（`src/shared/script.js`）をそのまま再利用しているが，タブボタンとタブパネルの両方を同一の`[data-tabs]`要素の子孫に置く必要がある点に注意する（この構造上の誤りにより，タブボタンの選択状態は切り替わるがパネルの中身が切り替わらない不具合が実装時に発生し，修正済みである）。
+- カードグリッド・統計（stat-grid）・アコーディオン・学生の声（voice-card）・ニュース一覧（news-list）・お問い合わせ等，他のコンポーネントは同一のクラス名を維持したままデザイントークンのみ更新したため，HTML構造への影響は最小限である。
+
+### 14.2 内部リンクのモード切り替え（github-pages ⇔ cms）
+
+サイト内の各ページを結ぶ`<a>`タグに`data-link="<key>"`（アンカー付きの場合は`data-hash="<hash>"`も）を付与し，実際の`href`・`target`属性は`scripts/set-link-mode.js`が`site.config.js`の`resolveInternalLink()`にもとづいて機械的に算出する構成へ変更した。
+
+- `github-pages`モード：ページ同士の兄弟ディレクトリ構造を利用した`"../<key>/index.html"`という相対パス。`target`属性は付与しない。
+- `cms`モード：`site.config.js`の`cmsPath`（大学ドメインの絶対パス）。`target="_top"`を付与する。
+
+`node scripts/set-link-mode.js github-pages`または`node scripts/set-link-mode.js cms`を実行すると，`src/pages/*/index.html`（8ファイル）の該当箇所が一括で書き換わる。現在は`github-pages`モードが適用されており，デバッグはGitHub Pages上のURLを直接開いて行う。外部リンク（教員プロフィール，公式お問い合わせページ）は`data-link`を持たないため常に書き換え対象外で，`target="_top"`のまま固定である。
+
+詳細な確認結果は`.reports/report_005.md`を参照。
