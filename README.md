@@ -45,6 +45,10 @@ project/
 │   ├── image.html
 │   ├── nlp.html
 │   └── reinforcement.html
+├── scripts/
+│   ├── generate-cms-shells.js   ← site.config.jsからcms-shells/*.htmlを生成
+│   └── verify-cms-shells.js     ← cms-shells/README.mdとsite.config.jsの整合性・公開URLの疎通を検証
+├── site.config.js         ← GitHub PagesのベースURL・ページ一覧の単一情報源（後述）
 ├── index.html             ← ローカル確認専用の開発用インデックス（CMS/本番公開対象ではない）
 ├── .github/workflows/deploy.yml   ← pushでビルドしGitHub Pagesへ自動デプロイ
 ├── package.json
@@ -53,6 +57,31 @@ project/
 ```
 
 各`src/pages/*/index.html`は、`<meta charset="UTF-8">`を`<head>`の先頭に持つ完全なHTMLドキュメントです。全ソースファイル（.html/.css/.js/.md）はBOMなしUTF-8で保存されています。
+
+## ベースURLの単一管理（site.config.js）
+
+GitHub PagesのベースURL（リポジトリ名を含むパス）は、`vite.config.js`の`base`設定・`cms-shells/*.html`のiframe `src`・README.md内の公開URLの例という3箇所で必ず一致していなければなりません。これを個々のファイルへ手作業で書き込むと、どれか1箇所だけ更新して食い違う事故が起きるため、`site.config.js`を唯一の情報源とし、他はすべてそこから導出します。
+
+- `vite.config.js`は`site.config.js`の`BASE_PATH`・`PAGES`を直接importし、`base`とビルドエントリ（`rollupOptions.input`）を構築します。
+- `cms-shells/*.html`は`site.config.js`から次のコマンドで生成します。手動で編集しないでください。
+
+```bash
+npm run generate:cms-shells
+```
+
+- 生成物とREADME記載URLがsite.config.jsと食い違っていないか、以下のコマンドで検証できます（ネットワークアクセスなし）。
+
+```bash
+npm run verify:cms-shells
+```
+
+- 加えて、GitHub Pages上の公開URLが実際にHTTP 200を返すかも検証する場合は次を使用します（ネットワークアクセスあり）。
+
+```bash
+npm run verify:cms-shells:live
+```
+
+`site.config.js`の`PAGES`にページを追加・変更した場合は、`npm run generate:cms-shells`を再実行してから`npm run verify:cms-shells:live`で最終確認してください。
 
 ## ローカルでの動作確認方法
 
@@ -161,6 +190,7 @@ GitHub Pagesを初めて有効化する場合は、リポジトリの Settings �
 - ブラウザのlocalStorage/sessionStorageは使用していません。
 - 実際に送信可能な問い合わせフォームは実装していません（公式サイトのお問い合わせページへのリンクのみ）。
 - 画像には適切なalt属性を設定しています。画像は公式サイト（`https://www.shonan-it.ac.jp/`）に実在するものを絶対URLで参照しています（次フェーズでGitHub Releaseを使った外部ホスティングへの切り替えを予定）。
+- 全`<img>`タグに`referrerpolicy="no-referrer"`を付与しています。公式サイト側でReferer（参照元）に基づくホットリンク対策が行われた場合でも、別オリジン（GitHub Pages）からの画像読み込みがRefererチェックで拒否されないようにするための予防的な対応です。
 
 ## 今回のスコープ外（次フェーズ以降で対応）
 

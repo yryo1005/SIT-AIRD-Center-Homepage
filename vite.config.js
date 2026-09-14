@@ -1,5 +1,6 @@
 import { defineConfig } from "vite";
 import { resolve } from "path";
+import { BASE_PATH, PAGES } from "./site.config.js";
 
 /**
  * GitHub Pagesはリポジトリ名をサブパスとして公開するプロジェクトサイトのため，
@@ -7,24 +8,25 @@ import { resolve } from "path";
  * ローカル開発サーバー（vite dev、modeはdevelopment）ではbaseを"/"のままにする．
  * （command（"build"|"serve"）ではなくmodeで判定する。"vite preview"はcommandが
  * "serve"のためcommandでは本番ビルドと区別できないが，modeは"production"のままになる。）
+ *
+ * base（このファイル）・PAGES（site.config.js）・cms-shells/のiframe src
+ * （scripts/generate-cms-shells.jsがsite.config.jsから生成）は，
+ * すべてsite.config.jsを単一の情報源として導出されるため，食い違いが起きない。
  */
 export default defineConfig(({ mode }) => {
+  const input = {
+    devIndex: resolve(__dirname, "index.html"),
+  };
+  for (const page of PAGES) {
+    input[page.key] = resolve(__dirname, page.srcPath);
+  }
+
   return {
-    base: mode === "production" ? "/SIT-AIRD-Center-Homepage/" : "/",
+    base: mode === "production" ? BASE_PATH : "/",
     build: {
       outDir: "dist",
       rollupOptions: {
-        input: {
-          devIndex: resolve(__dirname, "index.html"),
-          top: resolve(__dirname, "src/pages/top/index.html"),
-          news: resolve(__dirname, "src/pages/news/index.html"),
-          facility: resolve(__dirname, "src/pages/facility/index.html"),
-          "basic-research": resolve(__dirname, "src/pages/basic-research/index.html"),
-          embedded: resolve(__dirname, "src/pages/embedded/index.html"),
-          image: resolve(__dirname, "src/pages/image/index.html"),
-          nlp: resolve(__dirname, "src/pages/nlp/index.html"),
-          reinforcement: resolve(__dirname, "src/pages/reinforcement/index.html"),
-        },
+        input,
       },
     },
   };

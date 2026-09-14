@@ -7,7 +7,10 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "generate:cms-shells": "node scripts/generate-cms-shells.js",
+    "verify:cms-shells": "node scripts/verify-cms-shells.js",
+    "verify:cms-shells:live": "node scripts/verify-cms-shells.js --live"
   },
   "devDependencies": {
     "vite": "^5.4.0"
