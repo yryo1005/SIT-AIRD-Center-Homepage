@@ -1,6 +1,6 @@
 # document.md：AI R&D Center Webサイト再構築プロジェクト（v2：Vite + GitHub Pages + iframe）
 
-本ドキュメントは，本プロジェクトで作成したプログラム・文書の役割，依存関係，実行方法を記述する．対応する指示書は`.orders/order_001.md`（v1：ArtisCMS3直接貼り付け版），`.orders/order_002.md`（v2：Vite + GitHub Pages + iframe版），`.orders/order_003.md`（v2追加修正：公開URL修正・画像表示修正），`.orders/order_004.md`（ガイダンス資料の取り込み），`.orders/order_005.md`（デザイン刷新・内部リンクのモード切り替え），実施レポートは`.reports/report_001.md`〜`.reports/report_005.md`である．
+本ドキュメントは，本プロジェクトで作成したプログラム・文書の役割，依存関係，実行方法を記述する．対応する指示書は`.orders/order_001.md`（v1：ArtisCMS3直接貼り付け版），`.orders/order_002.md`（v2：Vite + GitHub Pages + iframe版），`.orders/order_003.md`（v2追加修正：公開URL修正・画像表示修正），`.orders/order_004.md`（ガイダンス資料の取り込み），`.orders/order_005.md`（デザイン刷新・内部リンクのモード切り替え），`.orders/order_006.md`（表示内容の精査・修正），実施レポートは`.reports/report_001.md`〜`.reports/report_006.md`である．
 
 `.orders/order_004.md`への対応で，`references/`配下のガイダンス資料（PPTX/PDF）から抽出したテキスト・画像を，公式サイトの内容を削除・改変することなくサイトへ追加した．写真は`src/assets/images/`に配置し，Viteの標準アセットパイプラインで処理される．`references/`自体は大容量ファイル（最大255MB，GitHubの単一ファイル上限100MBを超過）を含むため`.gitignore`に追加し，リポジトリには含めていない（詳細は`.reports/report_004.md`を参照）．
 
@@ -225,3 +225,17 @@ npm run preview
 `node scripts/set-link-mode.js github-pages`または`node scripts/set-link-mode.js cms`を実行すると，`src/pages/*/index.html`（8ファイル）の該当箇所が一括で書き換わる。現在は`github-pages`モードが適用されており，デバッグはGitHub Pages上のURLを直接開いて行う。外部リンク（教員プロフィール，公式お問い合わせページ）は`data-link`を持たないため常に書き換え対象外で，`target="_top"`のまま固定である。
 
 詳細な確認結果は`.reports/report_005.md`を参照。
+
+## 15. 表示内容の精査・修正（order_006）の内容
+
+`.orders/order_006.md`は，公開後のユーザー確認にもとづくチャットでの指示（画像の追加・出典説明の削除・教員写真の入れ替え・不要コンテンツの削除・免責文の削除・画像クロップの恒久修正・研究内容の追加）である。
+
+- **ニュース画像**：公式サイトのニュース一覧ページから，21記事中19記事に対応する画像を取得し，`.news-row`に`.news-thumb`として追加した（`src/pages/news/index.html`）。
+- **出典説明の削除**：`.stat-footnote`（「〇〇件はポスターに基づく」等）を全ページから削除した。
+- **教員写真の入れ替え修正**：`src/assets/images/faculty/kamatsuka-akira.jpeg`と`saito-tomohiko.jpeg`の中身を入れ替えた（HTML側の参照は変更なし）。
+- **基礎研究ページの内容精査**：「取り組み中の研究例」セクション（ゼミ・個人作業の写真を含む）を削除し，紹介していた研究テーマは組込AI・NLPページへ移設した。
+- **免責文の削除**：組込AI・画像処理・NLPページの「公式サイト上には発表者名等が掲載されていません…」という`notice-panel`，強化学習ページの経緯説明を削除・簡略化した。
+- **画像クロップの恒久修正**：`.card-img`・`.photo-strip img`・`.tab-photos img`の`object-fit`を`cover`から`contain`＋背景色に変更し，画像の縦横比によらず見切れず表示される仕組みに統一した。この確認の過程で，`.card p { flex: 1; }`が`.card-tag`（同じく`<p>`要素）にも意図せず適用され，画像を持たないカードでレイアウトが崩れる別のCSSバグを発見し，`.card-body p:not(.card-tag)`への変更で修正した。
+- **研究内容の追加**：`references/`のガイダンス資料から，組込AI（圧力センサー姿勢判定AI）・画像処理（Autoencoderによる有歪圧縮）・NLP（学内案内ChatBot「AI英太郎」）の研究テーマを追加した。第三者由来の可能性がある画像（ストック写真・書籍表紙等）は使用していない。
+
+詳細な確認結果は`.reports/report_006.md`を参照。
