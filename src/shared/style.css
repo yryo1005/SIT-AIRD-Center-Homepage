@@ -648,6 +648,15 @@ p {
   background: var(--bg-soft);
 }
 
+.facility-room-photo-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-faint);
+  font-family: var(--mono);
+  font-size: 13px;
+}
+
 .card-body {
   padding: 22px;
   display: flex;

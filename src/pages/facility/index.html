@@ -22,7 +22,6 @@
       <nav class="main-nav" aria-label="サイト内ナビゲーション">
         <a href="../top/index.html" data-link="top">トップ</a>
         <a href="../news/index.html" data-link="news">ニュース</a>
-        <a href="../top/index.html#faculty" data-link="top" data-hash="faculty">指導教員</a>
         <a href="../facility/index.html" data-link="facility" aria-current="page">施設</a>
         <a href="../basic-research/index.html" data-link="basic-research">基礎研究</a>
         <a href="../embedded/index.html" data-link="embedded">組込AI</a>
@@ -39,66 +38,13 @@
         <p class="breadcrumb"><a href="../top/index.html" data-link="top">AI R&amp;D Center</a> / 施設</p>
         <p class="hero-eyebrow"><span class="rule"></span>Facility</p>
         <h1>施設</h1>
-        <p class="page-hero-lead">AI R&amp;D Centerには、メンバーが研究活動に没頭できるいくつかの部屋があります。タブを切り替えて、それぞれのスペースをご覧ください。</p>
+        <p class="page-hero-lead">AI R&amp;D Centerには、メンバーが研究活動に没頭できるいくつかの部屋があります。</p>
       </div>
     </section>
 
     <section class="section">
       <div class="container">
-        <div data-tabs>
-        <div class="tab-bar" role="tablist">
-          <button class="tab-btn" type="button" role="tab" aria-selected="true" data-tab-target="panel-entrance">入口・エントランス</button>
-          <button class="tab-btn" type="button" role="tab" aria-selected="false" data-tab-target="panel-room01">大会議室</button>
-          <button class="tab-btn" type="button" role="tab" aria-selected="false" data-tab-target="panel-room02">小会議室</button>
-          <button class="tab-btn" type="button" role="tab" aria-selected="false" data-tab-target="panel-room03">展示室</button>
-          <button class="tab-btn" type="button" role="tab" aria-selected="false" data-tab-target="panel-room04">ヨギボーゾーン</button>
-        </div>
-
-        <div class="tab-panel is-active" id="panel-entrance">
-          <div class="tab-photos">
-            <img src="/src/assets/images/facility/entrance-window-display.jpg" alt="AI R&amp;D Centerの入口ショーウィンドウ。展示ポスターとロボットのぬいぐるみが飾られている">
-            <img src="/src/assets/images/facility/security-robots-poppo-peppe.jpg" alt="技術書・論文誌の本棚の前に置かれた警備ロボット「ポッホ」と「ベッペ」">
-          </div>
-          <p class="small-caps">Entrance</p>
-          <p class="tab-desc">1号館1階、入って正面がAI R&amp;D Centerの入口です。展示ポスターや活動紹介が飾られたショーウィンドウのほか、数学・プログラミング・AIに関わる技術書や論文誌が充実した本棚があり、日々更新されています。センター内には警備ロボット「ポッホ」と「ベッペ」もいます。</p>
-        </div>
-
-        <div class="tab-panel" id="panel-room01">
-          <div class="tab-photos">
-            <img referrerpolicy="no-referrer" src="/src/assets/images/facility/AICenter_room01.jpg" alt="大会議室の様子1">
-            <img referrerpolicy="no-referrer" src="/src/assets/images/facility/F02E3396-0645-44D4-A7F3-0687F0950F26.jpg" alt="大会議室の様子2">
-          </div>
-          <p class="small-caps">Room 01</p>
-          <p class="tab-desc">週に1度のメンバーの活動報告や、Sub Projectと呼ばれる授業、ゼミ、各自の作業を行なっています。</p>
-        </div>
-
-        <div class="tab-panel" id="panel-room02">
-          <div class="tab-photos">
-            <img referrerpolicy="no-referrer" src="/src/assets/images/facility/S__1376261.jpg" alt="小会議室の様子1">
-            <img referrerpolicy="no-referrer" src="/src/assets/images/facility/S__2080772.jpg" alt="小会議室の様子2">
-          </div>
-          <p class="small-caps">Room 02</p>
-          <p class="tab-desc">ゼミや学生同士の会議、先生同士の会議を行っています。</p>
-        </div>
-
-        <div class="tab-panel" id="panel-room03">
-          <div class="tab-photos">
-            <img referrerpolicy="no-referrer" src="/src/assets/images/facility/48183.jpg" alt="展示室の様子1">
-            <img referrerpolicy="no-referrer" src="/src/assets/images/facility/S__2080775.jpg" alt="展示室の様子2">
-          </div>
-          <p class="small-caps">Room 03</p>
-          <p class="tab-desc">ゼミや活動報告、広いスペースを必要とする実験を行っています。</p>
-        </div>
-
-        <div class="tab-panel" id="panel-room04">
-          <div class="tab-photos">
-            <img referrerpolicy="no-referrer" src="/src/assets/images/facility/9390E345-283E-41DD-90C1-DE384637926C.jpg" alt="ヨギボーゾーンの様子1">
-            <img referrerpolicy="no-referrer" src="/src/assets/images/facility/B1828AC7-2B80-4EF1-A21D-3D1066687C44.jpg" alt="ヨギボーゾーンの様子2">
-          </div>
-          <p class="small-caps">Room 04</p>
-          <p class="tab-desc">ゼミや活動報告を行っています。また、ヨギボーに座って個人作業をしているメンバーもいます。</p>
-        </div>
-        </div>
+        <div class="theme-stack facility-room-list" data-source="facility-rooms"></div>
       </div>
     </section>
   </main>

@@ -1,8 +1,16 @@
 {
   "date": "2023-03-31",
+  "eventDate": "2023年3月26日・27日",
   "title": "AI Centerのメンバー1人がCCS研究会に参加しました",
-  "body": "2023年3月26日・27日に開催されたCCS研究会にて、AI R&D Centerのメンバー1名が山富龍ら「AutoEncoderとPix2Seqを用いた大喜利生成AIの実装に関する研究」について発表しました。",
+  "participants": 1,
+  "body": "CCS研究会にて、AI R&D Centerのメンバー1名が研究発表をおこないました。",
+  "references": [
+    "山富龍，マハブービシェヘラザード，二宮洋，「AutoEncoderとPix2Seqを用いた大喜利生成AIの実装に関する研究」，IEICE信学技報 複雑コミュニケーションサイエンス研究会，CCS2022-73，pp.59-62(2023)．"
+  ],
   "images": [
-    { "src": "news/S__10330120.jpg", "alt": "CCS研究会の発表の様子" }
+    {
+      "src": "news/S__10330120.jpg",
+      "alt": "CCS研究会の発表の様子"
+    }
   ]
 }

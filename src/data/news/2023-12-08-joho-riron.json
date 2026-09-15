@@ -1,8 +1,16 @@
 {
   "date": "2023-12-08",
+  "eventDate": "2023年8月3日〜4日",
   "title": "AI Centerのメンバーが電子情報通信学会情報理論研究会に参加しました",
-  "body": "2023年8月3日・4日に開催された電子情報通信学会情報理論研究会にて、AI R&D Centerのメンバー1名が「Arimoto-Sibson Capacityを計算する新たなアルゴリズム」について発表しました。",
+  "participants": 1,
+  "body": "電子情報通信学会情報理論研究会にて、AI R&D Centerのメンバー1名が研究発表をおこないました。",
+  "references": [
+    "石川悠樹，鎌塚明，風間皐希，「Arimoto-Sibson Capacityを計算する新たなアルゴリズム」，電子情報通信学会技術研究報告，vol.123，no.149，IT2023-22，pp.44-49，August 2023．"
+  ],
   "images": [
-    { "src": "research/ishikawa_jyoho.png", "alt": "電子情報通信学会情報理論研究会の発表者" }
+    {
+      "src": "research/ishikawa_jyoho.png",
+      "alt": "電子情報通信学会情報理論研究会の発表者"
+    }
   ]
 }

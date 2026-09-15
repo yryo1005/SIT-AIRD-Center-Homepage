@@ -8,6 +8,7 @@
  * localStorage / sessionStorage は使用しない。
  */
 import { PREFECTURES } from "../data/prefectures.js";
+import { FACILITY_ROOMS } from "../data/facility-rooms.js";
 
 /**
  * src/data/news/以下の個別ニュースJSONファイルを，ビルド時に静的インポートする。
@@ -162,10 +163,15 @@ function renderNewsList() {
       const images = (item.images ?? [])
         .map((image) => ({ url: resolveImagePath(image.src), alt: image.alt }))
         .filter((image) => Boolean(image.url));
+      const metaParts = [];
+      if (item.eventDate) metaParts.push(`開催日：${item.eventDate}`);
+      if (item.participants) metaParts.push(`参加人数：${item.participants}名`);
       openMediaModal({
         eyebrow: formatNewsDateLabel(item.date),
         title: item.title,
+        meta: metaParts.join("／"),
         bodyLines: (item.body ?? "").split("\n"),
+        referenceLines: item.references,
         images,
       });
     });
@@ -173,9 +179,33 @@ function renderNewsList() {
 }
 
 /**
- * ニュースのうち画像を持つ記事の先頭画像を，横方向に自動スクロールする
+ * 一定時間おきに，与えられた複数の画像を順番に切り替える関数．
+ * ニュース写真帯・施設ページの各部屋写真など，1つの枠に複数の候補画像がある
+ * 箇所で共通して使う。1枚しかない場合は何もしない（切り替えは発生しない）。
+ * 引数:
+ *   imgEl (HTMLImageElement): 表示先の<img>要素。
+ *   images (Array<{url: string, alt: string}>): 切り替える画像の一覧。
+ *   intervalMs (number): 切り替え間隔（ミリ秒）。
+ * 戻り値: なし．
+ */
+function startImageRotation(imgEl, images, intervalMs = 4000) {
+  if (!imgEl || images.length <= 1) return;
+  const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (prefersReducedMotion) return;
+  let index = 0;
+  setInterval(() => {
+    index = (index + 1) % images.length;
+    imgEl.src = images[index].url;
+    imgEl.alt = images[index].alt || "";
+  }, intervalMs);
+}
+
+/**
+ * ニュースのうち画像を持つ記事を，横方向に自動スクロールする
  * 写真帯（.news-photo-slider-track[data-source="news-json"]）へ描画する関数．
  * 該当要素がないページでは何もしない．画像を持つ記事が無い場合も何もしない．
+ * 1件のニュースに複数の画像がある場合は，同じ枠内で一定時間おきに画像を
+ * 切り替えて，全ての写真が見られるようにする。
  * 引数: なし．
  * 戻り値: なし．
  */
@@ -184,11 +214,13 @@ function renderNewsPhotoSlider() {
   if (!track) return;
 
   const withImages = sortNewsByDateDesc(newsData)
-    .map((item) => {
-      const firstImage = (item.images ?? [])[0];
-      return { ...item, resolvedImage: firstImage ? resolveImagePath(firstImage.src) : null, imageAlt: firstImage?.alt };
-    })
-    .filter((item) => Boolean(item.resolvedImage));
+    .map((item) => ({
+      ...item,
+      resolvedImages: (item.images ?? [])
+        .map((image) => ({ url: resolveImagePath(image.src), alt: image.alt || item.title }))
+        .filter((image) => Boolean(image.url)),
+    }))
+    .filter((item) => item.resolvedImages.length > 0);
   if (withImages.length === 0) {
     const wrapper = track.closest(".news-photo-slider");
     if (wrapper) wrapper.hidden = true;
@@ -199,7 +231,7 @@ function renderNewsPhotoSlider() {
     .map(
       (item) => `
         <figure>
-          <img src="${escapeHtml(item.resolvedImage)}" alt="${escapeHtml(item.imageAlt || item.title)}" referrerpolicy="no-referrer">
+          <img src="${escapeHtml(item.resolvedImages[0].url)}" alt="${escapeHtml(item.resolvedImages[0].alt)}" referrerpolicy="no-referrer">
           <figcaption>${escapeHtml(formatNewsDateLabel(item.date))} ${escapeHtml(item.title)}</figcaption>
         </figure>
       `
@@ -210,6 +242,13 @@ function renderNewsPhotoSlider() {
   if (!prefersReducedMotion) {
     track.innerHTML += track.innerHTML;
   }
+  // 複製後のtrack全体から<figure>を取得し，オリジナル・複製の両方に
+  // 画像切り替えを仕込む（複製分もユーザーの目に触れるため）。
+  track.querySelectorAll("figure").forEach((figure, index) => {
+    const item = withImages[index % withImages.length];
+    const img = figure.querySelector("img");
+    startImageRotation(img, item.resolvedImages, 4000 + (index % withImages.length) * 350);
+  });
 }
 
 /**
@@ -244,6 +283,33 @@ const JP_MAP_BACKGROUND = `
 `;
 
 /**
+ * "../assets/images/<prefix>/<key>/<file>"という構成のフォルダから，
+ * キー（都道府県キーや部屋キー等）ごとに画像URLの一覧を集計する関数．
+ * ファイル名の並び順（import.meta.globの結果はパス文字列順）で返るため，
+ * "YYYY-MM-連番"のような命名規則にしておくと時系列順になる。
+ * 学会行脚マップ・施設ページの部屋写真など，「フォルダに画像を追加するだけで
+ * 反映される」仕組みを共有する箇所すべてから使う。
+ * 引数:
+ *   prefix (string): "conference-map"や"facility"等，assets/images直下のフォルダ名。
+ * 戻り値:
+ *   Object<string, string[]>: キーごとの画像URL配列。
+ */
+function groupImagesByFolder(prefix) {
+  const grouped = {};
+  const pattern = new RegExp(`\\.\\./assets/images/${prefix}/([^/]+)/`);
+  Object.keys(imageAssets)
+    .sort()
+    .forEach((path) => {
+      const match = path.match(pattern);
+      if (!match) return;
+      const key = match[1];
+      if (!grouped[key]) grouped[key] = [];
+      grouped[key].push(imageAssets[path]);
+    });
+  return grouped;
+}
+
+/**
  * 学会行脚マップ（.jp-map[data-source="conference-map"]）を描画する関数．
  * src/data/prefectures.jsの47都道府県それぞれに，
  * src/assets/images/conference-map/<都道府県キー>/ 以下の画像を対応付け，
@@ -256,16 +322,7 @@ function renderConferenceMap() {
   const svg = document.querySelector('.jp-map[data-source="conference-map"]');
   if (!svg) return;
 
-  // "../assets/images/conference-map/<key>/<file>" というパスから，
-  // 都道府県キーごとに画像URLの一覧を集計する。
-  const imagesByPrefecture = {};
-  Object.keys(imageAssets).forEach((path) => {
-    const match = path.match(/\.\.\/assets\/images\/conference-map\/([^/]+)\//);
-    if (!match) return;
-    const key = match[1];
-    if (!imagesByPrefecture[key]) imagesByPrefecture[key] = [];
-    imagesByPrefecture[key].push(imageAssets[path]);
-  });
+  const imagesByPrefecture = groupImagesByFolder("conference-map");
 
   const markers = PREFECTURES.map((pref) => {
     const images = imagesByPrefecture[pref.key] ?? [];
@@ -290,7 +347,7 @@ function renderConferenceMap() {
         eyebrow: "Conference Map",
         title: `${pref.name}`,
         bodyLines: images.length > 0
-          ? [`${pref.name}で撮影された写真です。`]
+          ? []
           : ["この都道府県の写真はまだ登録されていません。", `src/assets/images/conference-map/${key}/ に画像ファイルを追加すると，ここに表示されます。`],
         images,
       });
@@ -302,6 +359,47 @@ function renderConferenceMap() {
         openHandler();
       }
     });
+  });
+}
+
+/**
+ * 施設ページの各部屋を縦に並べて描画する関数（.facility-room-list[data-source="facility-rooms"]）．
+ * src/data/facility-rooms.jsで定義した部屋ごとに，
+ * src/assets/images/facility/<部屋キー>/ 以下の画像を対応付ける。
+ * 学会行脚マップと同様，フォルダに画像を追加するだけで反映される仕組みとし，
+ * 1つの部屋に複数枚の写真がある場合は一定時間おきに自動で切り替える。
+ * 該当要素がないページでは何もしない。
+ * 引数: なし．
+ * 戻り値: なし．
+ */
+function renderFacilityRooms() {
+  const list = document.querySelector('.facility-room-list[data-source="facility-rooms"]');
+  if (!list) return;
+
+  const imagesByRoom = groupImagesByFolder("facility");
+
+  list.innerHTML = FACILITY_ROOMS.map((room) => {
+    const images = imagesByRoom[room.key] ?? [];
+    const photo = images.length > 0
+      ? `<img class="card-img" data-room-key="${escapeHtml(room.key)}" src="${escapeHtml(images[0])}" alt="${escapeHtml(room.name)}の様子" referrerpolicy="no-referrer">`
+      : `<div class="card-img facility-room-photo-empty" aria-hidden="true">写真準備中</div>`;
+    return `
+      <div class="info-card facility-room-card">
+        ${photo}
+        <div class="card-body">
+          <p class="card-tag">${escapeHtml(room.caption)}</p>
+          <h3>${escapeHtml(room.name)}</h3>
+          <p>${escapeHtml(room.description)}</p>
+        </div>
+      </div>
+    `;
+  }).join("");
+
+  list.querySelectorAll("img[data-room-key]").forEach((img) => {
+    const key = img.getAttribute("data-room-key");
+    const room = FACILITY_ROOMS.find((r) => r.key === key);
+    const images = (imagesByRoom[key] ?? []).map((url) => ({ url, alt: `${room.name}の様子` }));
+    startImageRotation(img, images, 5000);
   });
 }
 
@@ -338,7 +436,9 @@ function ensureMediaModal() {
       <div class="media-modal-body">
         <p class="media-modal-eyebrow"></p>
         <h2 id="media-modal-title" class="media-modal-title"></h2>
+        <p class="media-modal-meta"></p>
         <div class="media-modal-text"></div>
+        <ol class="media-modal-references"></ol>
       </div>
     </div>
   `;
@@ -400,21 +500,37 @@ function renderMediaModalCarouselFrame() {
  *   options (object):
  *     eyebrow (string): タイトル上に小さく表示するラベル（日付やカテゴリ名）。
  *     title (string): 見出し。
+ *     meta (string | undefined): 開催日・参加人数等，タイトル直下に1行で表示する補足情報。
  *     bodyLines (Array<string>): 本文の各行（空行は無視される）。
+ *     referenceLines (Array<string> | undefined): 文献情報。1件ずつ番号付きリストで表示する。
  *     images (Array<{url: string, alt: string}>): 表示する画像一覧。
  * 戻り値: なし．
  */
-function openMediaModal({ eyebrow, title, bodyLines, images }) {
+function openMediaModal({ eyebrow, title, meta, bodyLines, referenceLines, images }) {
   const overlay = ensureMediaModal();
 
   overlay.querySelector(".media-modal-eyebrow").textContent = eyebrow ?? "";
   overlay.querySelector(".media-modal-title").textContent = title ?? "";
+
+  const metaEl = overlay.querySelector(".media-modal-meta");
+  metaEl.textContent = meta ?? "";
+  metaEl.hidden = !meta;
 
   const bodyParagraphs = (bodyLines ?? [])
     .filter((line) => (line ?? "").trim().length > 0)
     .map((line) => `<p>${escapeHtml(line)}</p>`)
     .join("");
   overlay.querySelector(".media-modal-text").innerHTML = bodyParagraphs;
+
+  const referencesEl = overlay.querySelector(".media-modal-references");
+  const references = (referenceLines ?? []).filter((line) => (line ?? "").trim().length > 0);
+  if (references.length > 0) {
+    referencesEl.innerHTML = references.map((line) => `<li>${escapeHtml(line)}</li>`).join("");
+    referencesEl.hidden = false;
+  } else {
+    referencesEl.innerHTML = "";
+    referencesEl.hidden = true;
+  }
 
   const resolvedImages = (images ?? []).filter((image) => Boolean(image.url));
 
@@ -571,6 +687,7 @@ document.addEventListener("DOMContentLoaded", () => {
   renderNewsList();
   renderNewsPhotoSlider();
   renderConferenceMap();
+  renderFacilityRooms();
   initTabs();
   initAccordions();
   initIframeHeightReporter();
