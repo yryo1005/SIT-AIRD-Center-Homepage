@@ -12,9 +12,9 @@ v2では，v1で採用していた「build.jsでCSS/JSをインライン展開�
 
 | パス | 役割 |
 | :--- | :--- |
-| `src/shared/style.css` | 全ページ共通のスタイルシート．ダークテーマ・青アクセントの配色，タイポグラフィ，カード・アコーディオン・タブ等のコンポーネントを定義する．内容はv1の`shared/style.css`を踏襲している． |
-| `src/shared/script.js` | 全ページ共通のスクリプト．ナビゲーション開閉，スクロール進捗バー，ニュースティッカー，タブ切り替え，アコーディオン開閉に加え，v2で追加した「iframe埋め込み時に本文の高さを親ウィンドウへ通知する処理」を含む． |
-| `src/pages/*/index.html` | 各ページのHTMLソース（8ページ）．`<!DOCTYPE html>`から始まる完全なHTMLドキュメントで，`<head>`の最初の子要素として`<meta charset="UTF-8">`を宣言する．内部リンクはすべてルート相対パス＋`target="_top"`． |
+| `src/shared/style.css` | 全ページ共通のスタイルシート．**白背景＋青アクセントのライトテーマ**（order_005でダークテーマから刷新）．Fraunces／Inter／IBM Plex Monoのタイポグラフィ，カード・アコーディオン・ミニカルーセル・モーダル等のコンポーネントを定義する． |
+| `src/shared/script.js` | 全ページ共通のスクリプト．ナビゲーション開閉，スクロール進捗バー，ニュース／研究内容のJSON描画，アコーディオン開閉，ミニカルーセル（複数画像の横スライド切り替え），汎用ポップアップ（`openMediaModal()`），学会行脚マップ・施設ページのフォルダアップロード対応描画に加え，「iframe埋め込み時に本文の高さを親ウィンドウへ通知する処理」を含む．文字のみのニューストリッカーとタブ切り替えUIはorder_010・013で廃止済み． |
+| `src/pages/*/index.html` | 各ページのHTMLソース（現在5ページ：top／news／facility／basic-research（表示名は「研究内容」）／conference-map。組込AI・画像処理・NLPの3ページはorder_014で研究内容ページへ統合され廃止）．`<!DOCTYPE html>`から始まる完全なHTMLドキュメントで，`<head>`の最初の子要素として`<meta charset="UTF-8">`を宣言する．内部リンクはすべてルート相対パス＋`target="_top"`． |
 | `index.html`（リポジトリルート） | ローカル確認専用の開発用インデックスページ．各ページへのリンク一覧を表示する．CMS・本番公開の対象ではない． |
 | `vite.config.js` | Viteのビルド設定．`src/pages/*/index.html`（8ファイル）とルートの`index.html`を複数エントリとして`dist/`へビルドする．GitHub Pagesのサブパス公開に対応するため，`mode`が`"production"`のとき（`vite build`・`vite preview`）のみ`base`を`/SIT-AIRD-Center-Homepage/`に設定する． |
 | `cms-shells/*.html` | ArtisCMS3の「埋め込みHTML」欄に貼り付けるための，ページごとの短いiframeシェル（8ファイル）．GitHub PagesのURLを`src`に持つ`iframe`と，高さ調整用の`postMessage`受信スクリプトから成る．**手動編集はせず，`scripts/generate-cms-shells.js`で`site.config.js`から生成する．** |
@@ -40,25 +40,25 @@ flowchart TD
     B --> J
     C["src/pages/facility/index.html"] --> S
     C --> J
-    D["src/pages/basic-research/index.html"] --> S
+    D["src/pages/basic-research/index.html（研究内容）"] --> S
     D --> J
-    E["src/pages/embedded/index.html"] --> S
-    E --> J
-    F["src/pages/image/index.html"] --> S
-    F --> J
-    G["src/pages/nlp/index.html"] --> S
-    G --> J
-    H["src/pages/reinforcement/index.html"] --> S
-    H --> J
+    K["src/pages/conference-map/index.html"] --> S
+    K --> J
 
-    IDX & A & B & C & D & E & F & G & H --> VITE["vite build（vite.config.jsのrollupOptions.input）"]
-    VITE -->|"CSS/JSをハッシュ付きファイルへバンドルし出力"| DIST["dist/（GitHub Pagesへ配信する成果物）"]
+    J -->|"import.meta.glob"| ND["src/data/news/*.json"]
+    J -->|"import.meta.glob"| RD["src/data/research/*.json"]
+    J --> PF["src/data/prefectures.js"]
+    J --> FR["src/data/facility-rooms.js"]
+    J -->|"import.meta.glob"| IMG["src/assets/images/**（全画像）"]
+
+    IDX & A & B & C & D & K --> VITE["vite build（vite.config.jsのrollupOptions.input）"]
+    VITE -->|"CSS/JS/画像をハッシュ付きファイルへバンドルし出力"| DIST["dist/（GitHub Pagesへ配信する成果物）"]
 
     DIST -->|"GitHub Actions（deploy.yml）がpush時に自動デプロイ"| PAGES["GitHub Pages（yryo1005.github.io/SIT-AIRD-Center-Homepage/...）"]
 
     PAGES -->|"iframe src"| SHELL_TOP["cms-shells/top.html"]
     PAGES --> SHELL_NEWS["cms-shells/news.html"]
-    PAGES --> SHELL_ETC["cms-shells/（他6ファイル）"]
+    PAGES --> SHELL_ETC["cms-shells/（他3ファイル）"]
 
     SHELL_TOP -->|"貼り付け"| CMS["ArtisCMS3側の各ページ（埋め込みHTML欄）"]
     SHELL_NEWS --> CMS
@@ -69,16 +69,27 @@ flowchart TD
     J -.-> SHELL_ETC
 ```
 
+`src/pages/embedded/`・`src/pages/image/`・`src/pages/nlp/`・`src/pages/reinforcement/`の4ページは，order_010（強化学習）・order_014（組込AI・画像処理・NLP）でそれぞれ廃止済みである．現在の研究内容ページ（`basic-research/`）が全研究テーマを集約している．
+
 `src/shared/script.js`内の主要な関数と処理の流れは次のとおりである．
 
 ```mermaid
 flowchart LR
     DCL["DOMContentLoadedイベント"] --> NAV["initNavToggle()"]
     DCL --> SCROLL["initScrollProgress()"]
-    DCL --> TICKER["initNewsTicker()"]
-    DCL --> TABS["initTabs()"]
+    DCL --> NEWS["renderNewsList()"]
+    DCL --> SLIDER["renderNewsPhotoSlider()"]
+    DCL --> RESEARCH["renderResearchItems()"]
+    DCL --> MAP["renderConferenceMap()"]
+    DCL --> ROOMS["renderFacilityRooms()"]
     DCL --> ACC["initAccordions()"]
     DCL --> RESIZE["initIframeHeightReporter()"]
+
+    NEWS -->|"クリック"| MODAL["openMediaModal()"]
+    MAP -->|"マーカークリック"| MODAL
+    SLIDER --> MINI["wireMiniCarousel()"]
+    ROOMS --> MINI
+    MINI -->|"タップ"| MODAL
 
     RESIZE -->|"window.self !== window.top のときのみ動作"| OBS["ResizeObserver(document.body)"]
     OBS -->|"サイズ変化を検知するたび"| POST["postHeight()"]
@@ -87,18 +98,24 @@ flowchart LR
 
 - `initNavToggle`：ハンバーガーメニューの開閉．
 - `initScrollProgress`：スクロール量に応じた進捗バーの幅更新．
-- `initNewsTicker`：`prefers-reduced-motion`を考慮した上で，ニュースティッカーの中身を複製しシームレスループを実現．
-- `initTabs`：`data-tabs`属性を持つタブUIの切り替え．
-- `initAccordions`：業績一覧等のアコーディオン開閉．
-- `initIframeHeightReporter`：v2で追加．`window.self !== window.top`（iframe埋め込み状態）のときのみ動作し，`ResizeObserver`で本文（`document.body`）の高さ変化を検知して`postMessage`で親ウィンドウへ通知する．GitHub Pagesを単独で開いた場合は何も行わない．
+- `renderNewsList`／`renderNewsPhotoSlider`：`src/data/news/*.json`（`import.meta.glob`）を読み込み，ニュース一覧・写真帯を描画する．一覧の各行クリックで`openMediaModal()`を呼ぶ（order_010）．
+- `renderResearchItems`：`src/data/research/*.json`を読み込み，研究内容ページの全研究テーマを縦1列で描画する（order_014）．
+- `renderConferenceMap`：`src/data/prefectures.js`と`src/assets/images/conference-map/<都道府県キー>/`のフォルダ内画像から，学会行脚マップのSVGマーカーを描画する（order_011）．
+- `renderFacilityRooms`：`src/data/facility-rooms.js`と`src/assets/images/facility/<部屋キー>/`のフォルダ内画像から，施設ページの各部屋カードを描画する（order_012）．
+- `buildMiniCarouselHtml`／`wireMiniCarousel`：複数画像を横スライドで切り替える共通カルーセル部品．左右ボタン・自動切り替え・タップでの`openMediaModal()`呼び出しを提供する（order_013）。ニュース写真帯・施設の部屋写真の両方で使う．
+- `openMediaModal`：ニュース詳細・学会行脚マップの都道府県写真・施設の部屋写真すべてで共有する汎用ポップアップ．画像が複数ある場合は横スライドのカルーセル表示になる（order_010で新設，order_013でスライド方式に刷新）．
+- `initAccordions`：業績一覧等のアコーディオン開閉．デフォルトで開いた状態のパネルも扱える（order_012）．
+- `initIframeHeightReporter`：`window.self !== window.top`（iframe埋め込み状態）のときのみ動作し，`ResizeObserver`で本文（`document.body`）の高さ変化を検知して`postMessage`で親ウィンドウへ通知する．GitHub Pagesを単独で開いた場合は何も行わない．
+- 文字のみのニューストリッカー（`initNewsTicker`）とタブ切り替えUI（`initTabs`）は，それぞれorder_010・order_013で廃止された．
 
 `cms-shells/*.html`側は，対応する`message`イベント（`type: "ai-rd-center:height"`）を受信し，`iframe`要素の`style.height`を更新するインラインスクリプトを持つ．
 
 ## 3. 外部モジュールとの依存関係
 
 - ビルドツールとして`vite`（`devDependencies`）に依存する．`npm install`で導入する．
-- サイト本体（`src/pages/*/index.html`が生成する成果物）は，外部CDN（Google Fonts，jsDelivr，GSAP等）へ依存していない．アニメーションはGSAP等を使わず，素のCSS（`@keyframes`，`transition`）とJavaScript（`ResizeObserver`，`matchMedia`）のみで実装している．
-- 画像のみ，湘南工科大学公式サイト（`https://www.shonan-it.ac.jp/`）上の既存画像を絶対URLで参照している．
+- サイト本体（`src/pages/*/index.html`が生成する成果物）は，外部CDN（jsDelivr，GSAP等）へ依存していない。Google Fontsのみ各ページの`<head>`で読み込んでいる（`fonts.googleapis.com`・`fonts.gstatic.com`）．アニメーションはGSAP等を使わず，素のCSS（`@keyframes`，`transition`）とJavaScript（`ResizeObserver`，`matchMedia`）のみで実装している．
+- トップページの「紹介動画」セクション（order_015）のみ，`<iframe src="https://www.youtube.com/embed/...">`でYouTubeの動画プレイヤーを埋め込んでいる。
+- 画像は全て`src/assets/images/`配下にリポジトリ内保存しており（order_009），外部サイトのURLへの依存はない．
 
 ## 4. Node.js環境の構築方法
 
@@ -123,7 +140,7 @@ npm run build
 npm run preview
 ```
 
-`vite.config.js`の`rollupOptions.input`にエントリとして列挙した9つのHTMLファイル（開発用インデックス1つ＋ページ8つ）が，それぞれ`dist/`配下の対応するパス（例：`dist/src/pages/top/index.html`）へ出力される．出力パスはVite側の仕様により，ソースファイルの`root`（プロジェクトルート）からの相対パスがそのまま使われる（`rollupOptions.input`のオブジェクトキーは出力ファイル名を決定しない）．
+`vite.config.js`の`rollupOptions.input`にエントリとして列挙したHTMLファイル（開発用インデックス1つ＋`site.config.js`の`PAGES`が持つページ数。2026年現在は5ページ）が，それぞれ`dist/`配下の対応するパス（例：`dist/src/pages/top/index.html`）へ出力される．出力パスはVite側の仕様により，ソースファイルの`root`（プロジェクトルート）からの相対パスがそのまま使われる（`rollupOptions.input`のオブジェクトキーは出力ファイル名を決定しない）．ページ数は`PAGES`の追加・削除に応じて自動的に増減するため，このドキュメントの数値は都度`site.config.js`を正として確認すること．
 
 ## 6. デプロイ方法（GitHub Actions → GitHub Pages）
 
@@ -349,3 +366,27 @@ npm run preview
 - ビルド時に，ユーザーが施設の4部屋フォルダへさらに5枚の写真を追加していたことを確認し，取り込んだ。
 
 いずれの変更も，公式サイト由来の実績一覧（42件）・教員情報は変更していない。詳細な確認結果は`.reports/report_014.md`を参照。
+
+## 24. トップページへのYouTube動画追加とREADME・documentの整合性見直し（order_015）の内容
+
+`.orders/order_015.md`は，チャットでの3点フィードバックである。
+
+- **YouTube動画へのリンク追加**：大学公式YouTubeチャンネル「Shonan Institute of Technology」の動画3件（2027年新設予定の人工知能専攻紹介，情報学部企画「これからの未来」，情報学部企画「やりたいことに取り組む学生たち」）を確認し，トップページに新設した「紹介動画」セクション（`.video-grid`）に`<iframe>`で埋め込んだ。
+- **動画内容の確認と反映**：この作業環境からは動画本体の音声・字幕・description欄本文を取得する手段がなく，YouTube oEmbed APIで確認できたタイトル・チャンネル情報のみを用いた。動画内容を推測で「抽出した」として記載することは避け，確認できた範囲のタイトル情報のみをキャプションとして併記した。あわせて，動画のテーマに関連する事実として，大学公式ニュース（`https://www.shonan-it.ac.jp/topics/20260219_02/`）で確認した「2027年4月，情報学部情報学科に人工知能専攻（定員45名）を新設予定」という情報を，トップページの「AI R&D Centerの特徴」セクションに追記した。
+- **README・documentの整合性見直し**：これまでの複数回のサイト構造変更（ダークテーマ→ライトテーマ，8ページ→5ページへの統合，ニュースティッカー・タブUIの廃止，画像の外部参照→リポジトリ内保存への移行等）にもかかわらず，`document.md`冒頭の依存関係図・ファイル一覧表・`README.md`の技術要件セクションに，これらの変更が反映されず古い記述が残っていたため，現状に合わせて修正した（詳細は次項）。
+
+### README.mdの主な修正内容
+
+- 「その他の技術要件」：撤去済みの問い合わせフォーム・リンクの記述を削除し，画像が全てリポジトリ内保存済みであることを正しく記載するよう修正した。
+- 「デザイン・使用している技術」：廃止済みのタブ切り替え・ニューストリッカーへの言及を削除し，ミニカルーセル・汎用ポップアップ（`openMediaModal()`）・YouTube埋め込みの説明を追加した。
+- 新設セクション「トップページのYouTube動画を追加・更新する方法」を追加した。
+- 新設セクション「句読点」に関する運用ルール（「、」「。」ではなく「，」「．」を使用）を明記した。
+- 「今回のスコープ外」セクションを，実施済みの項目（PDF/PPTX抽出，画像のリポジトリ内保存）を削除し，実際に残っている今後の課題（学生の声等のデータファイル化，YouTube動画のデータファイル化，学会行脚マップの未登録都道府県）に更新した。
+
+### document.mdの主な修正内容
+
+- 「1. ディレクトリ・ファイルの役割」表：`style.css`の配色説明をダークテーマからライトテーマに修正し，`script.js`の説明にミニカルーセル・汎用ポップアップ・フォルダアップロード対応描画を追記した。ページ数を「8ページ」から「現在5ページ」に修正し，統合済みの3ページ（組込AI・画像処理・NLP）について明記した。
+- 「2. プログラム間の依存関係」のmermaid図・関数一覧：現存しない`initNewsTicker()`・`initTabs()`を削除し，`renderNewsList()`・`renderResearchItems()`・`renderConferenceMap()`・`renderFacilityRooms()`・`wireMiniCarousel()`・`openMediaModal()`等，現在実際に使われている関数に置き換えた。
+- 「3. 外部モジュールとの依存関係」：Google Fontsへの依存を明記し，画像が全てリポジトリ内保存済みであることに修正した。トップページのYouTube埋め込みについても追記した。
+
+いずれの変更も，公式サイト由来の実績一覧（42件）・教員情報は変更していない。詳細な確認結果は`.reports/report_015.md`を参照。

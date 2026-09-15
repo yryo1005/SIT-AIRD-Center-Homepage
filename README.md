@@ -331,17 +331,27 @@ GitHub Pagesを初めて有効化する場合は、リポジトリの Settings �
 ## デザイン・使用している技術
 
 - 配色は白背景＋青アクセントのライトテーマです。見出しにFraunces（セリフ体）、本文にInter（サンセリフ）、日付・ラベル・数値にIBM Plex Mono（等幅）を使用し、各ページの`<head>`でGoogle Fontsから読み込んでいます（`fonts.googleapis.com`・`fonts.gstatic.com`への外部リクエストが発生します）。
-- ビルドツール：Vite（`devDependencies`の`vite`のみ。GSAP等のアニメーションライブラリは使用せず、素のCSS（`@keyframes`）とJavaScript（`ResizeObserver`、イベントリスナー）でヒーローのSVGネットワーク描画アニメーション・タブ切り替え等を実装しています）
-- `prefers-reduced-motion: reduce`が有効な環境では、ヒーローのアニメーション・ニューストリッカーの複製アニメーション・スムーススクロールを無効化しています。
+- ビルドツール：Vite（`devDependencies`の`vite`のみ）。GSAP等のアニメーションライブラリは使用せず、素のCSS（`@keyframes`・`transition`）とJavaScript（`ResizeObserver`、イベントリスナー）でヒーローのSVGネットワーク描画アニメーション・アコーディオン開閉・ミニカルーセル（複数画像の横スライド切り替え，`buildMiniCarouselHtml()`/`wireMiniCarousel()`）等を実装しています。
+- ニュース詳細・学会行脚マップの都道府県写真・施設の部屋写真は，共通のポップアップ（モーダル）部品`openMediaModal()`で表示しており，画像が複数ある場合は矢印ボタン付きの横スライドカルーセルになります。
+- `prefers-reduced-motion: reduce`が有効な環境では、ヒーローのアニメーション・各種カルーセルの自動切り替え・スムーススクロールを無効化しています。
 
 ## その他の技術要件
 
 - ブラウザのlocalStorage/sessionStorageは使用していません。
-- 実際に送信可能な問い合わせフォームは実装していません（公式サイトのお問い合わせページへのリンクのみ）。
-- 画像には適切なalt属性を設定しています。画像は公式サイト（`https://www.shonan-it.ac.jp/`）に実在するものを絶対URLで参照しています（次フェーズでGitHub Releaseを使った外部ホスティングへの切り替えを予定）。
-- 全`<img>`タグに`referrerpolicy="no-referrer"`を付与しています。公式サイト側でReferer（参照元）に基づくホットリンク対策が行われた場合でも、別オリジン（GitHub Pages）からの画像読み込みがRefererチェックで拒否されないようにするための予防的な対応です。
+- サイト内に送信可能な問い合わせフォームは持っていません。ヘッダー等の「お問い合わせ」導線・専用セクションも設けていません（大学公式サイト側の問い合わせ機能と重複するため，order_010で撤去しました）。
+- 画像はすべて`src/assets/images/`配下にリポジトリ内保存しています。ニュース・学会行脚マップ・施設の部屋写真・研究内容など，画像を伴うコンテンツはすべて`import.meta.glob`でビルド時に静的インポートし，ハッシュ付きのビルド後URLへ解決しています。外部サイトの画像URLを直接指定する運用はしていません（当初は公式サイトの画像を絶対URLで参照していましたが，order_009でリポジトリ内保存へ全面的に移行しました）。
+- 全`<img>`タグに`referrerpolicy="no-referrer"`を付与しています。これは移行前の名残の予防的措置で，現時点では必須ではありませんが，安全側の設定として維持しています。
+- トップページには，大学公式YouTubeチャンネルの紹介動画を`<iframe>`で埋め込んでいます（後述）。
+- 本文・リスト等のテキストは`text-align: justify`（均等割り付け）で表示し，句読点は「、」「。」ではなく全角カンマ「，」・全角ピリオド「．」を使用しています（order_013）。新しく文章を追加する場合もこの表記に統一してください。
 
-## 今回のスコープ外（次フェーズ以降で対応）
+## トップページのYouTube動画を追加・更新する方法
 
-- PDF/PPTXなどのアップロードファイルからの情報・画像抽出
-- GitHub Releaseを使った画像の外部ホスティング（現時点では画像は引き続き公式サイトのURLをそのまま参照する）
+トップページの「紹介動画」セクション（`src/pages/top/index.html`内の`.video-grid`）には，大学公式YouTubeチャンネルの動画を`<iframe src="https://www.youtube.com/embed/<動画ID>">`という形で直接埋め込んでいます。データファイル化はしておらず，HTMLを直接編集する方式です。
+
+動画を追加・差し替えたい場合は，`.video-card`のブロックをコピーし，`iframe`の`src`とタイトル属性，`figcaption`内の見出し・説明文を書き換えてください。動画IDはYouTubeのURL（`https://www.youtube.com/watch?v=<動画ID>`）の`v=`以降の部分です。動画の説明文は，この作業環境からはYouTube動画の音声・字幕・description欄本文を取得できないため，[oEmbed API](https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=<動画ID>&format=json)等で確認できるタイトル情報をもとに，事実に基づく範囲で記載しています。
+
+## 今回のスコープ外（今後の課題）
+
+- 学生の声・卒研一覧のデータファイル化（`students.json`・`theses.json`）：order_007で設計案のみ提示し，未実装（現状は`src/pages/basic-research/index.html`にHTMLとして直接記述）。
+- YouTube動画情報のデータファイル化：現状はHTML直接編集方式（上記参照）。件数が増えた場合は，ニュース・研究内容と同様のJSONファイル方式への移行を検討する。
+- 学会行脚マップ：広島・福岡・北海道・沖縄の4県のみ写真が登録済み。他の都道府県は，開催地が確認でき次第，フォルダアップロードの仕組みで追加できる。
