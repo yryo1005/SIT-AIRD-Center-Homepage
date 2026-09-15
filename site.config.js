@@ -73,12 +73,6 @@ export const PAGES = [
     cmsPath: "/faculties/research-center/ai_rd_center/nlp/",
     title: "AI R&D Center NLP",
   },
-  {
-    key: "reinforcement",
-    srcPath: "src/pages/reinforcement/index.html",
-    cmsPath: "/faculties/research-center/ai_rd_center/reinforcement/",
-    title: "AI R&D Center 強化学習",
-  },
 ];
 
 /**

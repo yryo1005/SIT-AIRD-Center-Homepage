@@ -6,33 +6,37 @@
 
 ## ニュースを追加・編集する方法（HTML/JavaScriptの知識がなくてもできます）
 
-ニュースの内容は`src/pages/news/index.html`に直接書かれているのではなく、**`src/data/news.json`という1つのファイル**にまとめられています。ページの見た目（デザイン）とニュースの中身（データ）が分かれているため、`news.json`の中身を書き換えるだけで、トップページのお知らせ欄とニュース一覧ページの両方に自動で反映されます。
+ニュースの内容は`src/pages/news/index.html`に直接書かれているのではなく、**`src/data/news/`フォルダの中にある，ニュース1件＝1つのJSONファイル**として保存されています。新しいニュースを追加したいときは，このフォルダに新しいファイルを1つ追加するだけで済みます（既存のファイルを編集する必要はありません）。ページの見た目（デザイン）とニュースの中身（データ）が分かれているため，ファイルを追加・編集するだけで，ニュース一覧ページ（一覧・クリック時のポップアップ）とトップページの写真スライダーの両方に自動で反映されます。
 
-### 1. 開くファイル
+### 1. ファイルの場所と1件あたりの構成
 
-`src/data/news.json` をテキストエディタ（メモ帳や、GitHubのWeb画面上の編集機能でも構いません）で開きます。
+`src/data/news/`フォルダの中に，`2026-06-16-gakuryoku-yushu.json`のような名前のファイルが1つのニュースに対応しています。ファイル名は日付が分かればどんな名前でも構いません（他のファイルと重複しない名前にしてください）。
 
-### 2. ファイルの中身
-
-このファイルは、ニュース1件を`{ }`で囲んだ「かたまり」が、`,`（カンマ）区切りで並んだ形をしています。
+1件のファイルの中身は，次の4項目だけを持つシンプルな形です。
 
 ```json
-[
-  {
-    "date": "2026-06-16",
-    "title": "AI Centerのメンバー5人が学力優秀賞に選ばれました",
-    "summary": "センター所属の5名が学生表彰で学力優秀賞を受賞しました。",
-    "image": "news/S__41484329.jpg",
-    "imageAlt": "学力優秀賞の受賞式の様子"
-  },
-  {
-    "date": "2026-01-06",
-    "title": "AI Centerのメンバーが電子情報通信学会IBISML研究会に参加しました",
-    "summary": "1名が「深層学習を用いたリバーシプレイヤ分類手法」について発表しました。",
-    "image": null,
-    "imageAlt": null
-  }
-]
+{
+  "date": "2026-06-16",
+  "title": "AI Centerのメンバー5人が学力優秀賞に選ばれました",
+  "body": "2026年5月27日の学生表彰式にて、AI R&D Center所属のメンバー5名が「学力優秀賞」を受賞しました。日頃の学業と研究活動の両立が評価されての受賞です。",
+  "images": [
+    { "src": "news/S__41484329.jpg", "alt": "学力優秀賞の受賞式の様子" }
+  ]
+}
+```
+
+複数の発表がある場合は，`body`の中で`\n`（改行）を使って発表ごとに行を分けます。ポップアップ表示では，行ごとに別の段落として表示されます。
+
+```json
+{
+  "date": "2026-03-14",
+  "title": "AI Centerのメンバー2人が2026年電子情報通信学会総合大会に参加しました",
+  "body": "2026年電子情報通信学会総合大会にて、AI R&D Centerのメンバー2名が研究発表をおこないました。\n・土屋琴夢ら「適応的慣性項を用いた3次正則化ニュートン法に関する研究」\n・山富龍ら「ニューラルネットワークによる大喜利の面白さ判定」",
+  "images": [
+    { "src": "news/S__26222595_0.jpg", "alt": "発表の様子1" },
+    { "src": "news/S__26222596_0.jpg", "alt": "発表の様子2" }
+  ]
+}
 ```
 
 各項目の意味は次のとおりです。
@@ -41,37 +45,35 @@
 | :--- | :--- | :--- |
 | `date` | 日付。必ず`"2026-06-16"`のように`"西暦-月-日"`（2桁ずつ）の形で書く | 必須 |
 | `title` | ニュースの見出し | 必須 |
-| `summary` | ニュースの本文（1〜2文程度） | 必須 |
-| `image` | 画像を表示したい場合の画像ファイル。基本は`src/assets/images/news/`に画像ファイルを追加し，`"news/ファイル名.jpg"`のように`src/assets/images/`からの相対パスで指定する（画像は必ずこのリポジトリ内に保存し，外部サイトのURLを直接貼り付けない）。画像が無い場合は`null`と書く | 任意（無ければ`null`） |
-| `imageAlt` | 画像の説明文（目の不自由な方などに読み上げられる文章）。`image`が`null`のときは`null`でよい | `image`がある場合は書くことを推奨 |
+| `body` | ニュースの本文。発表名・発表者名・学会名などをできるだけ具体的に書く。複数の発表がある場合は`\n`で行を分ける | 必須 |
+| `images` | 画像の配列。`src`（`src/assets/images/news/`からの相対パス）と`alt`（画像の説明文）を持つオブジェクトを，画像の枚数だけ並べる。画像が無い場合は空配列`[]`にする | 必須（無ければ`[]`） |
 
-**新しいニュースをどこに追加しても、日付が新しい順に自動で並び替えて表示されます。** ファイルの先頭・末尾どちらに追加しても構いません。
+**新しいニュースのファイルをどこに追加しても、日付が新しい順に自動で並び替えて表示されます。**
 
-画像を追加したい場合は、画像ファイル（jpg/jpeg/png等）を`src/assets/images/news/`フォルダにコピーしてから、`image`の値をそのファイル名を含む相対パス（例：`"news/2026autumn_opencampus.jpg"`）にしてください。サイト全体の画像は、著作権・肖像権への配慮のため、このリポジトリ内に保存したものだけを使う方針にしています（外部サイトの画像URLを直接指定する運用はしていません）。
+画像を追加したい場合は，画像ファイル（jpg/jpeg/png等）を`src/assets/images/news/`フォルダにコピーしてから，`images`配列にファイル名を含む相対パス（例：`"news/2026autumn_opencampus.jpg"`）を追加してください。1件のニュースに複数枚の画像がある場合は，ニュース詳細のポップアップ内で矢印ボタンによる画像スライド（カルーセル）として表示されます。サイト全体の画像は，著作権・肖像権への配慮のため，このリポジトリ内に保存したものだけを使う方針にしています（外部サイトの画像URLを直接指定する運用はしていません）。
 
-### 3. 1件追加する具体例（コピペで使えます）
+### 2. 1件追加する具体例（コピペで使えます）
 
-例えば「2026年10月1日に、メンバーがオープンキャンパスでAIデモを展示した」というニュースを追加したい場合、配列の一番外側の`[`のすぐ後ろ（既存の最初の項目の前）に、以下のブロックをカンマ区切りで追加します。
+例えば「2026年10月1日に、メンバーがオープンキャンパスでAIデモを展示した」というニュースを追加したい場合，`src/data/news/2026-10-01-open-campus.json`のような新しいファイルを作成し，以下の内容を貼り付けます。
 
 ```json
-  {
-    "date": "2026-10-01",
-    "title": "AI Centerのメンバーがオープンキャンパスでデモ展示をおこないました",
-    "summary": "来場した高校生にAIを使ったデモを紹介しました。",
-    "image": null,
-    "imageAlt": null
-  },
+{
+  "date": "2026-10-01",
+  "title": "AI Centerのメンバーがオープンキャンパスでデモ展示をおこないました",
+  "body": "来場した高校生にAIを使ったデモを紹介しました。",
+  "images": []
+}
 ```
 
-追加後は、`{`と`}`の数、`,`（カンマ）の付け忘れ・付けすぎがないかを確認してください（1件分のブロックの直後に別のブロックが続く場合は、間に`,`が必要です。配列の一番最後の項目の後ろには`,`を付けません）。不安な場合は、[jsonlint.com](https://jsonlint.com/)のようなJSON検証サイトに貼り付けて、エラーが出ないか確認すると安全です。
+保存後は，`{`と`}`の対応，`"`の付け忘れがないかを確認してください。不安な場合は，[jsonlint.com](https://jsonlint.com/)のようなJSON検証サイトに貼り付けて，エラーが出ないか確認すると安全です。
 
-### 4. 保存して公開する
+### 3. 保存して公開する
 
 ファイルを保存し、`git add`・`git commit`・`git push`（またはGitHubのWeb画面上で直接コミット）すると、`main`ブランチへのpushをきっかけに`.github/workflows/deploy.yml`のGitHub Actionsが自動的に動き、数分でGitHub Pages上のサイトに反映されます。ArtisCMS3側の設定やHTML/JavaScriptのコードは一切触る必要はありません。
 
-### 5. 動作の仕組み（参考）
+### 4. 動作の仕組み（参考）
 
-`src/shared/script.js`が`src/data/news.json`を読み込み、トップページの「最新ニュース」ティッカー（新しい順に上位5件）と、ニュース一覧ページの全件一覧の両方を、ページ読み込み時にJavaScriptで自動描画しています。件数表示（「全21件」の21の部分）も、`news.json`の件数から自動的に計算されるため、手で書き換える必要はありません。
+`src/shared/script.js`が`import.meta.glob`で`src/data/news/`以下の全JSONファイルを読み込み、ニュース一覧ページの全件一覧（クリックすると本文・画像をポップアップ表示）と、トップページ・ニュースページの写真スライダーの両方を、ページ読み込み時にJavaScriptで自動描画しています。件数表示（「全21件」の21の部分）も、読み込んだファイルの件数から自動的に計算されるため、手で書き換える必要はありません。
 
 ## 配信アーキテクチャ
 
@@ -99,7 +101,7 @@ project/
 │   │   ├── style.css     ← 全ページ共通スタイル（白＋青のライトテーマ）
 │   │   └── script.js     ← 共通スクリプト（ナビ開閉・進捗バー・ニュース描画・タブ・アコーディオン・iframe高さ通知）
 │   ├── data/
-│   │   └── news.json     ← ニュースのデータ（HTML/JSの知識なしで編集可能。後述）
+│   │   └── news/          ← ニュースのデータ（1件＝1つのJSONファイル。HTML/JSの知識なしで編集可能。後述）
 │   ├── assets/images/    ← ガイダンス資料等から抽出した教員写真・施設写真
 │   └── pages/
 │       ├── top/index.html
@@ -109,7 +111,6 @@ project/
 │       ├── embedded/index.html
 │       ├── image/index.html
 │       ├── nlp/index.html
-│       └── reinforcement/index.html
 ├── cms-shells/            ← ArtisCMS3の「埋め込みHTML」欄に貼るページごとの短いiframeシェル
 │   ├── top.html
 │   ├── news.html
@@ -118,7 +119,6 @@ project/
 │   ├── embedded.html
 │   ├── image.html
 │   ├── nlp.html
-│   └── reinforcement.html
 ├── scripts/
 │   ├── generate-cms-shells.js   ← site.config.jsからcms-shells/*.htmlを生成
 │   ├── verify-cms-shells.js     ← cms-shells/README.mdとsite.config.jsの整合性・公開URLの疎通を検証
@@ -197,7 +197,6 @@ npm run dev
 - `http://localhost:5173/src/pages/embedded/index.html`
 - `http://localhost:5173/src/pages/image/index.html`
 - `http://localhost:5173/src/pages/nlp/index.html`
-- `http://localhost:5173/src/pages/reinforcement/index.html`
 
 現在の内部リンクは`github-pages`モード（相対パス、`target="_top"`なし）になっているため、開発サーバー上でもヘッダー・フッターのナビゲーションをクリックしてそのままページ間を移動できます。CMSへの埋め込みを想定した動作を確認したい場合は、`node scripts/set-link-mode.js cms`を実行してから同様に確認してください（確認後は`node scripts/set-link-mode.js github-pages`で戻せます）。
 
@@ -228,7 +227,6 @@ npm run preview
 - 組込AI：`https://yryo1005.github.io/SIT-AIRD-Center-Homepage/src/pages/embedded/index.html`
 - 画像処理：`https://yryo1005.github.io/SIT-AIRD-Center-Homepage/src/pages/image/index.html`
 - NLP：`https://yryo1005.github.io/SIT-AIRD-Center-Homepage/src/pages/nlp/index.html`
-- 強化学習：`https://yryo1005.github.io/SIT-AIRD-Center-Homepage/src/pages/reinforcement/index.html`
 
 GitHub Pagesを初めて有効化する場合は、リポジトリの Settings → Pages で Source を「GitHub Actions」に設定してください（このリポジトリでは`peaceiris`系のgh-pagesブランチ運用ではなく、`actions/deploy-pages`による直接デプロイを使用しています）。
 
@@ -245,7 +243,6 @@ GitHub Pagesを初めて有効化する場合は、リポジトリの Settings �
 | `cms-shells/embedded.html` | `/faculties/research-center/ai_rd_center/embedded/` |
 | `cms-shells/image.html` | `/faculties/research-center/ai_rd_center/image/` |
 | `cms-shells/nlp.html` | `/faculties/research-center/ai_rd_center/nlp/` |
-| `cms-shells/reinforcement.html` | `/faculties/research-center/ai_rd_center/reinforcement/` |
 
 各ファイルはUTF-8（BOMなし）で保存されています。**CMS編集画面側の文字コード設定がUTF-8以外の場合、貼り付け後に文字化けする可能性があるため、貼り付け後は必ずプレビューで日本語表示を確認してください。** iframeの`src`はGitHub PagesのURLを直接指定しているため、この設定は最初の1回だけ行えば、以降はGitHubにpushするだけで表示内容が更新されます。
 
@@ -262,7 +259,6 @@ GitHub Pagesを初めて有効化する場合は、リポジトリの Settings �
 | `src/pages/embedded/` | `https://yryo1005.github.io/SIT-AIRD-Center-Homepage/src/pages/embedded/index.html` | （未記入） |
 | `src/pages/image/` | `https://yryo1005.github.io/SIT-AIRD-Center-Homepage/src/pages/image/index.html` | （未記入） |
 | `src/pages/nlp/` | `https://yryo1005.github.io/SIT-AIRD-Center-Homepage/src/pages/nlp/index.html` | （未記入） |
-| `src/pages/reinforcement/` | `https://yryo1005.github.io/SIT-AIRD-Center-Homepage/src/pages/reinforcement/index.html` | （未記入） |
 
 ## 文字コードに関する注意事項
 
