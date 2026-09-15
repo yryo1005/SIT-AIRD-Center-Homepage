@@ -10,8 +10,8 @@
   --surface-2: #eef2fa;
   --line: #dbe1ee;
   --text: #12141c;
-  --text-dim: #545b6e;
-  --text-faint: #848da3;
+  --text-dim: #3c4254;
+  --text-faint: #5c6478;
   --accent: #1d4ed8;
   --accent-dim: #1638a8;
   --accent2: #3b82f6;
@@ -22,6 +22,11 @@
   --serif: 'Fraunces', Georgia, 'Noto Serif JP', serif;
   --sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Hiragino Sans', 'Noto Sans JP', sans-serif;
   --mono: 'IBM Plex Mono', 'SFMono-Regular', 'Noto Sans Mono JP', monospace;
+
+  /* 公式サイト（大学ホームページ）の固定ヘッダー・フッターに合わせた配色 */
+  --official-footer-bg: #0e2d55;
+  --official-footer-text: #eaf0fb;
+  --official-accent: #4a96ff;
 }
 
 * {
@@ -48,8 +53,8 @@ body {
   background: var(--bg);
   color: var(--text);
   font-family: var(--sans);
-  line-height: 1.75;
-  font-size: 16px;
+  line-height: 1.8;
+  font-size: 18px;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -178,7 +183,7 @@ p {
 
 .main-nav a {
   color: var(--text-dim);
-  font-size: 14px;
+  font-size: 15px;
   padding: 8px 12px;
   border-radius: var(--radius);
   white-space: nowrap;
@@ -240,7 +245,7 @@ p {
 }
 
 .news-ticker-item {
-  font-size: 13px;
+  font-size: 14.5px;
   color: var(--text-dim);
   display: inline-flex;
   gap: 10px;
@@ -250,10 +255,64 @@ p {
 .news-ticker-item time {
   font-family: var(--mono);
   color: var(--accent);
-  font-size: 12px;
+  font-size: 13px;
 }
 
 @keyframes ticker-scroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+/* ---------------------------------------------------------------------
+   ニュース写真スライダー（横方向に自動スクロールする画像帯）
+   --------------------------------------------------------------------- */
+.news-photo-slider {
+  background: var(--bg-soft);
+  border-bottom: 1px solid var(--line);
+  overflow: hidden;
+  position: relative;
+  padding: 18px 0;
+}
+
+.news-photo-slider-track {
+  display: inline-flex;
+  align-items: center;
+  gap: 16px;
+  width: max-content;
+  animation: photo-slider-scroll 48s linear infinite;
+}
+
+.news-photo-slider:hover .news-photo-slider-track {
+  animation-play-state: paused;
+}
+
+.news-photo-slider figure {
+  margin: 0;
+  flex: none;
+  width: 220px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: var(--surface);
+}
+
+.news-photo-slider img {
+  width: 100%;
+  height: 140px;
+  object-fit: cover;
+}
+
+.news-photo-slider figcaption {
+  padding: 8px 10px;
+  font-family: var(--mono);
+  font-size: 12.5px;
+  color: var(--text-dim);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@keyframes photo-slider-scroll {
   0% { transform: translateX(0); }
   100% { transform: translateX(-50%); }
 }
@@ -269,13 +328,39 @@ p {
   background: var(--bg);
 }
 
+.hero-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+.hero-bg img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 30%;
+}
+
+.hero-bg::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(100deg, var(--bg) 32%, rgba(255, 255, 255, 0.88) 52%, rgba(255, 255, 255, 0.32) 78%, rgba(255, 255, 255, 0.1) 100%);
+}
+
+@media (max-width: 760px) {
+  .hero-bg::after {
+    background: linear-gradient(180deg, var(--bg) 38%, rgba(255, 255, 255, 0.82) 62%, rgba(255, 255, 255, 0.35) 100%);
+  }
+}
+
 .hero-net {
   position: absolute;
   right: -30px;
   bottom: -30px;
   width: 380px;
   max-width: 42vw;
-  z-index: 0;
+  z-index: 1;
   opacity: 0.9;
 }
 
@@ -307,14 +392,14 @@ p {
 
 .hero-inner {
   position: relative;
-  z-index: 1;
+  z-index: 2;
   max-width: 720px;
   animation: hero-fade-up 0.7s ease both;
 }
 
 .hero-eyebrow {
   font-family: var(--mono);
-  font-size: 12px;
+  font-size: 13px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--accent2);
@@ -372,12 +457,12 @@ p {
 .page-hero-lead {
   color: var(--text-dim);
   max-width: 68ch;
-  font-size: 16px;
+  font-size: 18px;
 }
 
 .breadcrumb {
   font-family: var(--mono);
-  font-size: 12px;
+  font-size: 13px;
   color: var(--text-faint);
   margin: 0 0 16px;
 }
@@ -457,7 +542,7 @@ p {
 
 .section-label {
   font-family: var(--mono);
-  font-size: 12px;
+  font-size: 13px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--accent2);
@@ -471,7 +556,7 @@ p {
 
 .section-lead {
   color: var(--text-dim);
-  font-size: 16px;
+  font-size: 18px;
   margin: 0;
 }
 
@@ -491,19 +576,62 @@ p {
   gap: 20px;
 }
 
+/*
+ * .card は「クリックするとページ遷移する」ブロック専用のクラスとする
+ * （<a class="card">として使う）。ホバーで枠線がアクセント色になり，
+ * わずかに浮き上がることで，クリック可能であることを示す。
+ * クリックしても遷移しない情報ブロック（研究テーマの説明・活動内容の
+ * 補足等）には，見た目を区別するため.info-cardを使う。
+ */
 .card {
   background: var(--surface);
   border: 1px solid var(--line);
+  border-left: 3px solid var(--accent);
   border-radius: var(--radius);
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  transition: border-color 0.15s ease, transform 0.15s ease;
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.06);
+  transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+  cursor: pointer;
 }
 
 .card:hover {
   border-color: var(--accent);
   transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(29, 78, 216, 0.12);
+}
+
+/*
+ * クリックしても遷移しない情報ブロック用。.cardと似た箱組みだが，
+ * ホバー時に動かない・枠線色が変わらないことで「遷移しない」ことを示す。
+ * 背景も一段沈んだ色にして，左のアクセント枠線も付けないことで，
+ * ナビゲーション用の.cardと一見して区別できるようにする。
+ */
+.info-card {
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.info-card::before {
+  content: "INFO";
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: 0.08em;
+  color: var(--text-faint);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 2px 6px;
+  z-index: 1;
 }
 
 .card-img {
@@ -524,26 +652,27 @@ p {
 
 .card-tag {
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: 12px;
   color: var(--accent);
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
-.card h3 {
-  font-size: 19px;
+.card h3,
+.info-card h3 {
+  font-size: 21px;
   margin: 0;
 }
 
 .card-body p:not(.card-tag) {
   color: var(--text-dim);
-  font-size: 14.5px;
+  font-size: 16px;
   margin: 0;
   flex: 1;
 }
 
 .card-link {
-  font-size: 13.5px;
+  font-size: 15px;
   font-weight: 600;
   color: var(--accent);
 }
@@ -574,7 +703,7 @@ p {
 }
 
 .stat-label {
-  font-size: 13.5px;
+  font-size: 15px;
   color: var(--text-dim);
 }
 
@@ -689,7 +818,7 @@ p {
 
 .faculty-role {
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: 12px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--accent2);
@@ -703,14 +832,14 @@ p {
 }
 
 .faculty-keywords {
-  font-size: 12.5px;
+  font-size: 14.5px;
   color: var(--text-dim);
   margin: 2px 0 0;
 }
 
 .faculty-card a.faculty-link {
   display: inline-block;
-  font-size: 13px;
+  font-size: 14.5px;
   margin-top: 10px;
   color: var(--accent);
 }
@@ -847,7 +976,7 @@ p {
 
 .accordion-panel li {
   margin-bottom: 10px;
-  font-size: 14.5px;
+  font-size: 16px;
   color: var(--text-dim);
 }
 
@@ -887,14 +1016,14 @@ p {
 
 .voice-quote {
   font-family: var(--serif);
-  font-size: 17px;
+  font-size: 19px;
   line-height: 1.7;
   margin: 0 0 14px;
   color: var(--text);
 }
 
 .voice-history {
-  font-size: 13px;
+  font-size: 15px;
   color: var(--text-dim);
 }
 
@@ -955,7 +1084,7 @@ p {
 }
 
 .news-row h3 {
-  font-size: 16.5px;
+  font-size: 18px;
   margin: 0 0 6px;
   font-family: var(--sans);
   font-weight: 700;
@@ -965,7 +1094,7 @@ p {
 .news-row p {
   margin: 0;
   color: var(--text-dim);
-  font-size: 14.5px;
+  font-size: 16px;
 }
 
 @media (max-width: 640px) {
@@ -1018,14 +1147,14 @@ p {
 }
 
 /* ---------------------------------------------------------------------
-   フッター
+   フッター（公式サイトの固定フッター（濃紺）に配色を合わせる）
    --------------------------------------------------------------------- */
 .site-footer {
   padding: 48px 0 32px;
-  color: var(--text-faint);
-  font-size: 13px;
-  background: var(--bg-soft);
-  border-top: 1px solid var(--line);
+  color: var(--official-footer-text);
+  font-size: 14.5px;
+  background: var(--official-footer-bg);
+  border-top: 1px solid var(--official-footer-bg);
 }
 
 .footer-grid {
@@ -1033,7 +1162,7 @@ p {
   flex-wrap: wrap;
   gap: 32px;
   justify-content: space-between;
-  border-bottom: 1px solid var(--line);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.18);
   padding-bottom: 28px;
   margin-bottom: 20px;
 }
@@ -1045,18 +1174,19 @@ p {
 }
 
 .footer-nav a {
-  color: var(--text-faint);
-  font-size: 13px;
+  color: var(--official-footer-text);
+  font-size: 14.5px;
 }
 
 .footer-nav a:hover {
-  color: var(--accent);
+  color: var(--official-accent);
 }
 
 .footer-address {
   font-family: var(--mono);
-  font-size: 12px;
+  font-size: 13.5px;
   line-height: 1.8;
+  color: var(--official-footer-text);
 }
 
 /* ---------------------------------------------------------------------
@@ -1066,7 +1196,7 @@ p {
 .text-muted { color: var(--text-dim); }
 .small-caps {
   font-family: var(--mono);
-  font-size: 12px;
+  font-size: 13px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--text-faint);

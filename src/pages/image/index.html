@@ -47,7 +47,7 @@
     <section class="section">
       <div class="container">
         <div class="card-grid">
-          <div class="card">
+          <div class="info-card">
             <img class="card-img" src="https://www.shonan-it.ac.jp/faculties/media/yamatomi_ohgiri.png" alt="大喜利生成AIの出力例" referrerpolicy="no-referrer">
             <div class="card-body">
               <p class="card-tag">Research Theme</p>
@@ -55,15 +55,17 @@
               <p>「笑いは日常生活で重要な要素です。この笑いをAIで提供できないか」という発想から開始した研究です。画像に対する大喜利を生成するAIシステムを開発しています。</p>
             </div>
           </div>
-          <div class="card">
+          <div class="info-card">
             <img class="card-img" src="https://www.shonan-it.ac.jp/faculties/media/aicenter003.png" alt="顔置き換えシステムのイメージ" referrerpolicy="no-referrer">
             <div class="card-body">
               <p class="card-tag">Research Theme</p>
-              <h3>顔置き換えシステム</h3>
-              <p>DeepFakeを倫理的に活用するための研究です。実在しない人物との顔置き換えを実現するシステムに取り組んでいます。</p>
+              <h3>ディープフェイクとVAEを用いたアイデンティティ保持型匿名化</h3>
+              <p>街頭インタビューのミーム化やSNS投稿への映り込みなど、一度公開された顔写真は「消えることのないデジタルタトゥー」になり得ます。モザイクやぼかしによる匿名化は匿名性が高い一方、画像のコンテキストが損なわれてしまう課題があります。この研究では、GHOST（DeepFake技術の一種）を用いて、ターゲットの人物の顔を架空の人物の顔に置き換えることで、表情や向きといった情報を保持しつつ匿名化する手法に取り組んでいます。</p>
+              <p>従来手法は、変換先の顔の属性（性別・年齢・人種等）をあらかじめ人手で指定するか、属性と顔写真がペアになった学習データを必要とする点が課題でした。本研究では、Variational Autoencoder（VAE）を用いてターゲットの顔から属性を保ったまま個人を特定できない顔ベクトルを生成する手法を提案し、UTKFace（23,088人の顔写真データセット）を用いてVAEを学習しています。変換の強さを表すスケール係数を変化させることで、属性の一貫性とプライバシー保護のトレードオフを制御できることを、性別の一致率・年齢の誤差・顔の類似度により定量的に評価しています。</p>
+              <p class="text-muted mono" style="font-size: 14px;">山富 龍，二宮 洋，湘南工科大学 AI R&amp;D Center</p>
             </div>
           </div>
-          <div class="card">
+          <div class="info-card">
             <img class="card-img" src="/src/assets/images/research/autoencoder-mnist-result.jpg" alt="Autoencoderによる画像復元実験の結果（オリジナル・復元・圧縮後の比較）">
             <div class="card-body">
               <p class="card-tag">Research Theme · B4</p>

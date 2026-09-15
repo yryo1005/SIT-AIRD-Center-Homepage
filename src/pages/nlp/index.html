@@ -47,7 +47,7 @@
     <section class="section">
       <div class="container">
         <div class="card-grid">
-          <div class="card">
+          <div class="info-card">
             <img class="card-img" src="https://www.shonan-it.ac.jp/faculties/media/izuka.png" alt="観光地レビューを用いた分散表現研究のイメージ" referrerpolicy="no-referrer">
             <div class="card-body">
               <p class="card-tag">Research Theme</p>
@@ -55,11 +55,12 @@
               <p>観光地レビューを用いて観光地をベクトルに変換し、観光地を推薦するシステムを提案する研究です。事前学習済み大規模言語モデルを活用し、テキストレビューをベクトル化することで類似度計算が可能になります。</p>
             </div>
           </div>
-          <div class="card">
+          <div class="info-card">
             <div class="card-body">
               <p class="card-tag">Research Theme · D1</p>
-              <h3>特定のキャラクター性を有する学校案内ChatBot</h3>
-              <p>学内に関する疑問にAIが回答する、キャラクター性を持たせた学校案内チャットボット「AI英太郎」の実装に取り組んでいます。</p>
+              <h3>特定のキャラクター性を有する学校案内ChatBot「AI Eitaro」</h3>
+              <p>ニューラルネットワークを用いたChatBotの普及を背景に、特定のキャラクター性を持たせた学校案内ChatBotの実装に取り組んでいる研究です。学生からの「4年生に進級するまでに何単位必要なの？」といった質問に、AIが学内情報にもとづいて音声で回答します。</p>
+              <p>音声認識にWhisper、学内情報の検索にRAG（Retrieval-Augmented Generation）、回答文の生成にChatGPT、文書解析にYomitoku、音声合成にZonosを組み合わせ、Flask・Ngrokでサーバー化することで、外部の端末からも利用できる構成としています。回答は、質問文に類似した学生便覧等の文章をRAGで検索し、その内容にもとづいて生成する仕組みです。</p>
             </div>
           </div>
         </div>

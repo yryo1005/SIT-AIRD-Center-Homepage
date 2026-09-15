@@ -105,6 +105,41 @@ function renderNewsList() {
 }
 
 /**
+ * news.jsonのうち画像を持つ記事を，横方向に自動スクロールする写真帯
+ * （.news-photo-slider-track[data-source="news-json"]）へ描画する関数．
+ * 該当要素がないページでは何もしない．画像を持つ記事が無い場合も何もしない．
+ * 引数: なし．
+ * 戻り値: なし．
+ */
+function renderNewsPhotoSlider() {
+  const track = document.querySelector('.news-photo-slider-track[data-source="news-json"]');
+  if (!track) return;
+
+  const withImages = sortNewsByDateDesc(newsData).filter((item) => Boolean(item.image));
+  if (withImages.length === 0) {
+    const wrapper = track.closest(".news-photo-slider");
+    if (wrapper) wrapper.hidden = true;
+    return;
+  }
+
+  track.innerHTML = withImages
+    .map(
+      (item) => `
+        <figure>
+          <img src="${escapeHtml(item.image)}" alt="${escapeHtml(item.imageAlt || item.title)}" referrerpolicy="no-referrer">
+          <figcaption>${escapeHtml(formatNewsDateLabel(item.date))} ${escapeHtml(item.title)}</figcaption>
+        </figure>
+      `
+    )
+    .join("");
+
+  const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (!prefersReducedMotion) {
+    track.innerHTML += track.innerHTML;
+  }
+}
+
+/**
  * ナビゲーションのハンバーガーメニュー開閉を初期化する関数．
  * 引数: なし．
  * 戻り値: なし．
@@ -236,6 +271,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initScrollProgress();
   renderNewsTicker();
   renderNewsList();
+  renderNewsPhotoSlider();
   initNewsTicker();
   initTabs();
   initAccordions();
