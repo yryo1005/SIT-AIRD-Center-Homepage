@@ -73,6 +73,12 @@ export const PAGES = [
     cmsPath: "/faculties/research-center/ai_rd_center/nlp/",
     title: "AI R&D Center NLP",
   },
+  {
+    key: "conference-map",
+    srcPath: "src/pages/conference-map/index.html",
+    cmsPath: "/faculties/research-center/ai_rd_center/conference-map/",
+    title: "AI R&D Center 学会行脚マップ",
+  },
 ];
 
 /**

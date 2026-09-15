@@ -1144,11 +1144,11 @@ p {
 /* ---------------------------------------------------------------------
    ニュース詳細ポップアップ（モーダル）
    --------------------------------------------------------------------- */
-body.news-modal-open {
+body.media-modal-open {
   overflow: hidden;
 }
 
-.news-modal-overlay {
+.media-modal-overlay {
   position: fixed;
   inset: 0;
   background: rgba(15, 23, 42, 0.55);
@@ -1159,11 +1159,11 @@ body.news-modal-open {
   z-index: 200;
 }
 
-.news-modal-overlay[hidden] {
+.media-modal-overlay[hidden] {
   display: none;
 }
 
-.news-modal {
+.media-modal {
   background: var(--surface);
   border-radius: var(--radius);
   max-width: 720px;
@@ -1174,7 +1174,7 @@ body.news-modal-open {
   box-shadow: 0 24px 64px rgba(15, 23, 42, 0.35);
 }
 
-.news-modal-close {
+.media-modal-close {
   position: absolute;
   top: 14px;
   right: 14px;
@@ -1190,22 +1190,22 @@ body.news-modal-open {
   z-index: 2;
 }
 
-.news-modal-close:hover {
+.media-modal-close:hover {
   border-color: var(--accent);
   color: var(--accent);
 }
 
-.news-modal-carousel {
+.media-modal-carousel {
   position: relative;
   background: var(--bg-soft);
   border-bottom: 1px solid var(--line);
 }
 
-.news-modal-carousel[hidden] {
+.media-modal-carousel[hidden] {
   display: none;
 }
 
-.news-modal-carousel-img {
+.media-modal-carousel-img {
   width: 100%;
   max-height: 420px;
   object-fit: contain;
@@ -1213,7 +1213,7 @@ body.news-modal-open {
   background: var(--bg-soft);
 }
 
-.news-modal-carousel-btn {
+.media-modal-carousel-btn {
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
@@ -1228,19 +1228,19 @@ body.news-modal-open {
   cursor: pointer;
 }
 
-.news-modal-carousel-btn[hidden] {
+.media-modal-carousel-btn[hidden] {
   display: none;
 }
 
-.news-modal-carousel-prev {
+.media-modal-carousel-prev {
   left: 12px;
 }
 
-.news-modal-carousel-next {
+.media-modal-carousel-next {
   right: 12px;
 }
 
-.news-modal-carousel-count {
+.media-modal-carousel-count {
   position: absolute;
   bottom: 10px;
   right: 14px;
@@ -1253,11 +1253,11 @@ body.news-modal-open {
   border-radius: var(--radius);
 }
 
-.news-modal-body {
+.media-modal-body {
   padding: 28px;
 }
 
-.news-modal-date {
+.media-modal-eyebrow {
   display: block;
   font-family: var(--mono);
   color: var(--accent);
@@ -1265,18 +1265,18 @@ body.news-modal-open {
   margin-bottom: 8px;
 }
 
-.news-modal-title {
+.media-modal-title {
   font-size: 24px;
   margin: 0 0 18px;
 }
 
-.news-modal-text p {
+.media-modal-text p {
   color: var(--text-dim);
   font-size: 17px;
   margin: 0 0 12px;
 }
 
-.news-modal-text p:last-child {
+.media-modal-text p:last-child {
   margin-bottom: 0;
 }
 
@@ -1357,6 +1357,123 @@ body.news-modal-open {
   font-size: 13.5px;
   line-height: 1.8;
   color: var(--official-footer-text);
+}
+
+/* ---------------------------------------------------------------------
+   学会行脚マップ
+   --------------------------------------------------------------------- */
+.conf-map-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(240px, 1fr);
+  gap: 32px;
+  align-items: start;
+}
+
+@media (max-width: 800px) {
+  .conf-map-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.conf-map-wrap {
+  background: var(--bg-soft);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 16px;
+}
+
+.jp-map {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.jp-map-bg path,
+.jp-map-bg ellipse {
+  fill: var(--surface-2);
+  stroke: var(--line);
+  stroke-width: 1;
+}
+
+.jp-map-divider {
+  stroke: var(--text-faint);
+  stroke-width: 1;
+}
+
+.jp-map-inset-label {
+  font-family: var(--mono);
+  font-size: 11px;
+  fill: var(--text-faint);
+}
+
+.jp-map-marker circle:not(.jp-map-marker-hit) {
+  fill: var(--text-faint);
+  opacity: 0.45;
+  stroke: var(--surface);
+  stroke-width: 1.5;
+  transition: fill 0.15s ease, opacity 0.15s ease, r 0.15s ease;
+  cursor: pointer;
+}
+
+.jp-map-marker-hit {
+  fill: transparent;
+  stroke: none;
+  opacity: 1;
+  cursor: pointer;
+}
+
+.jp-map-marker.has-photos circle:not(.jp-map-marker-hit) {
+  fill: var(--accent);
+  opacity: 1;
+}
+
+.jp-map-marker:hover circle:not(.jp-map-marker-hit),
+.jp-map-marker:focus circle:not(.jp-map-marker-hit) {
+  r: 9;
+  opacity: 1;
+  fill: var(--accent-dim);
+  outline: none;
+}
+
+.conf-map-side {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.conf-map-legend {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+}
+
+.conf-map-legend p {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 10px;
+  font-size: 16px;
+  color: var(--text-dim);
+}
+
+.conf-map-legend p:last-child {
+  margin-bottom: 0;
+}
+
+.conf-map-dot {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--text-faint);
+  opacity: 0.45;
+  flex: none;
+}
+
+.conf-map-dot--filled {
+  background: var(--accent);
+  opacity: 1;
 }
 
 /* ---------------------------------------------------------------------

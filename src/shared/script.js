@@ -2,10 +2,12 @@
  * AI R&D Center Webサイト 共通スクリプト
  * 全ページ共通のナビゲーション開閉、スクロール進捗バー、
  * タブ切り替え、アコーディオン開閉、ArtisCMS3のiframeシェルへの
- * 高さ通知処理に加えて、ニュース（src/data/news/以下の個別JSON）の
+ * 高さ通知処理に加えて、ニュース（src/data/news/以下の個別JSON）と
+ * 学会行脚マップ（src/assets/images/conference-map/以下の画像）の
  * 描画・ポップアップ表示・画像カルーセルを扱う。
  * localStorage / sessionStorage は使用しない。
  */
+import { PREFECTURES } from "../data/prefectures.js";
 
 /**
  * src/data/news/以下の個別ニュースJSONファイルを，ビルド時に静的インポートする。
@@ -18,37 +20,36 @@ const newsData = Object.values(newsModules).map((mod) => mod.default ?? mod);
 
 /**
  * src/assets/images/以下の全画像ファイルを，ビルド時にVite側で
- * ハッシュ付きの本番URLへ解決するための一覧．ニュースJSON内のimages[].srcは
- * "news/xxx.jpg"のようにsrc/assets/images/からの相対パスで指定するため，
- * JSON内の文字列参照だけではVite/Rollupが画像をビルド成果物へ含めてくれない
- * （HTML内のimg src="/src/..."と異なり，JSON値は静的なアセット参照として
- * 解析されないため）。この問題を避けるため，import.meta.globで
- * 画像を静的にインポートしておき，ファイル名から実際のURLを引けるようにする．
+ * ハッシュ付きの本番URLへ解決するための一覧．ニュースJSON内のimages[].srcや，
+ * 学会行脚マップの画像フォルダは"news/xxx.jpg"のようにsrc/assets/images/からの
+ * 相対パスで参照するため，文字列参照だけではVite/Rollupが画像をビルド成果物へ
+ * 含めてくれない（HTML内のimg src="/src/..."と異なり，JS/JSON上の文字列は
+ * 静的なアセット参照として解析されないため）。この問題を避けるため，
+ * import.meta.globで画像を静的にインポートしておき，パスから実際のURLを引く。
  */
-const newsImageAssets = import.meta.glob("../assets/images/**/*", {
+const imageAssets = import.meta.glob("../assets/images/**/*", {
   eager: true,
   import: "default",
 });
 
 /**
- * ニュースJSONのimages[].src（"news/xxx.jpg"等，src/assets/images/以下の
- * 相対パス）を，実際に読み込み可能な画像URLへ変換する関数．
- * "http"で始まる場合は外部URLとしてそのまま返す（非技術者が外部画像URLを
- * 直接貼り付けた場合の後方互換のため）．
+ * "news/xxx.jpg"等，src/assets/images/以下の相対パスを，実際に読み込み可能な
+ * 画像URLへ変換する関数．"http"で始まる場合は外部URLとしてそのまま返す
+ * （非技術者が外部画像URLを直接貼り付けた場合の後方互換のため）．
  * 引数:
- *   imagePath (string | null | undefined): images[].srcの値．
+ *   imagePath (string | null | undefined): 画像の相対パス．
  * 戻り値:
  *   string | null: 解決済みの画像URL．該当画像が見つからない場合はnull．
  */
-function resolveNewsImage(imagePath) {
+function resolveImagePath(imagePath) {
   if (!imagePath) return null;
   if (/^https?:\/\//.test(imagePath)) return imagePath;
   const key = `../assets/images/${imagePath.replace(/^\/+/, "")}`;
-  return newsImageAssets[key] ?? null;
+  return imageAssets[key] ?? null;
 }
 
 /**
- * HTML特殊文字をエスケープする関数．ニュースJSON内のtitle/bodyは
+ * HTML特殊文字をエスケープする関数．JSON等から読み込んだ文字列は
  * innerHTMLで挿入するため，&/</>等が含まれていても壊れないようにする．
  * 引数:
  *   value (string): エスケープ対象の文字列．
@@ -130,7 +131,7 @@ function renderNewsList() {
   list.innerHTML = sorted
     .map((item) => {
       const firstImage = (item.images ?? [])[0];
-      const imageUrl = firstImage ? resolveNewsImage(firstImage.src) : null;
+      const imageUrl = firstImage ? resolveImagePath(firstImage.src) : null;
       const hasImage = Boolean(imageUrl);
       const thumb = hasImage
         ? `<img class="news-thumb" src="${escapeHtml(imageUrl)}" alt="${escapeHtml(firstImage.alt || "")}" referrerpolicy="no-referrer">`
@@ -157,7 +158,16 @@ function renderNewsList() {
     row.addEventListener("click", () => {
       const id = Number(row.getAttribute("data-news-id"));
       const item = sorted.find((n) => n.id === id);
-      if (item) openNewsModal(item);
+      if (!item) return;
+      const images = (item.images ?? [])
+        .map((image) => ({ url: resolveImagePath(image.src), alt: image.alt }))
+        .filter((image) => Boolean(image.url));
+      openMediaModal({
+        eyebrow: formatNewsDateLabel(item.date),
+        title: item.title,
+        bodyLines: (item.body ?? "").split("\n"),
+        images,
+      });
     });
   });
 }
@@ -176,7 +186,7 @@ function renderNewsPhotoSlider() {
   const withImages = sortNewsByDateDesc(newsData)
     .map((item) => {
       const firstImage = (item.images ?? [])[0];
-      return { ...item, resolvedImage: firstImage ? resolveNewsImage(firstImage.src) : null, imageAlt: firstImage?.alt };
+      return { ...item, resolvedImage: firstImage ? resolveImagePath(firstImage.src) : null, imageAlt: firstImage?.alt };
     })
     .filter((item) => Boolean(item.resolvedImage));
   if (withImages.length === 0) {
@@ -202,55 +212,149 @@ function renderNewsPhotoSlider() {
   }
 }
 
+/**
+ * 学会行脚マップの背景に薄く敷く，日本列島のおおまかな模式的シルエット。
+ * 正確な海岸線ではなく，北海道・本州＋四国＋九州・沖縄という3つの
+ * ゆるやかな塊として，マーカーの位置関係が地図らしく見えるようにするための
+ * 装飾目的の図形である。
+ */
+const JP_MAP_BACKGROUND = `
+  <g class="jp-map-bg" aria-hidden="true">
+    <ellipse cx="345" cy="100" rx="55" ry="38" />
+    <path d="M 300,170
+             C 330,165 355,175 372,195
+             C 385,215 380,235 368,250
+             C 378,265 385,282 375,298
+             C 365,312 345,318 328,308
+             C 300,300 305,280 292,275
+             C 270,270 260,255 258,238
+             C 255,215 270,195 285,182
+             C 290,175 295,172 300,170 Z" />
+    <path d="M 95,300
+             C 130,290 165,300 195,315
+             C 220,318 245,312 260,325
+             C 250,340 225,345 205,335
+             C 185,345 160,340 145,350
+             C 120,360 95,345 90,325
+             C 88,315 90,305 95,300 Z" />
+    <ellipse cx="108" cy="470" rx="26" ry="18" />
+    <line x1="60" y1="430" x2="200" y2="430" stroke-dasharray="4 4" class="jp-map-divider" />
+    <text x="60" y="448" class="jp-map-inset-label">沖縄県（別枠表示）</text>
+  </g>
+`;
+
+/**
+ * 学会行脚マップ（.jp-map[data-source="conference-map"]）を描画する関数．
+ * src/data/prefectures.jsの47都道府県それぞれに，
+ * src/assets/images/conference-map/<都道府県キー>/ 以下の画像を対応付け，
+ * クリックするとその都道府県の写真をポップアップ表示するマーカーをSVGへ配置する。
+ * 該当要素がないページでは何もしない。
+ * 引数: なし．
+ * 戻り値: なし．
+ */
+function renderConferenceMap() {
+  const svg = document.querySelector('.jp-map[data-source="conference-map"]');
+  if (!svg) return;
+
+  // "../assets/images/conference-map/<key>/<file>" というパスから，
+  // 都道府県キーごとに画像URLの一覧を集計する。
+  const imagesByPrefecture = {};
+  Object.keys(imageAssets).forEach((path) => {
+    const match = path.match(/\.\.\/assets\/images\/conference-map\/([^/]+)\//);
+    if (!match) return;
+    const key = match[1];
+    if (!imagesByPrefecture[key]) imagesByPrefecture[key] = [];
+    imagesByPrefecture[key].push(imageAssets[path]);
+  });
+
+  const markers = PREFECTURES.map((pref) => {
+    const images = imagesByPrefecture[pref.key] ?? [];
+    const hasImages = images.length > 0;
+    return `
+      <g class="jp-map-marker${hasImages ? " has-photos" : ""}" data-pref-key="${escapeHtml(pref.key)}" tabindex="0" role="button" aria-label="${escapeHtml(pref.name)}${hasImages ? `（写真${images.length}枚）` : "（写真未登録）"}">
+        <circle class="jp-map-marker-hit" cx="${pref.x}" cy="${pref.y}" r="12"></circle>
+        <circle cx="${pref.x}" cy="${pref.y}" r="7"></circle>
+        <title>${escapeHtml(pref.name)}</title>
+      </g>
+    `;
+  }).join("");
+
+  svg.innerHTML = JP_MAP_BACKGROUND + markers;
+
+  svg.querySelectorAll(".jp-map-marker").forEach((marker) => {
+    const key = marker.getAttribute("data-pref-key");
+    const pref = PREFECTURES.find((p) => p.key === key);
+    const openHandler = () => {
+      const images = (imagesByPrefecture[key] ?? []).map((url) => ({ url, alt: `${pref.name}の写真` }));
+      openMediaModal({
+        eyebrow: "Conference Map",
+        title: `${pref.name}`,
+        bodyLines: images.length > 0
+          ? [`${pref.name}で撮影された写真です。`]
+          : ["この都道府県の写真はまだ登録されていません。", `src/assets/images/conference-map/${key}/ に画像ファイルを追加すると，ここに表示されます。`],
+        images,
+      });
+    };
+    marker.addEventListener("click", openHandler);
+    marker.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        openHandler();
+      }
+    });
+  });
+}
+
 /** モーダル内の画像カルーセルの現在の表示位置を保持する状態。 */
-const newsModalState = {
+const mediaModalState = {
   images: [],
   currentIndex: 0,
 };
 
 /**
- * ニュース詳細のポップアップ（モーダル）のDOMを1つだけ生成し，
- * documentに追加する関数．2回目以降の呼び出しでは既存の要素を返す。
+ * 汎用ポップアップ（モーダル）のDOMを1つだけ生成し，documentに追加する関数．
+ * ニュース詳細・学会行脚マップの都道府県写真の両方で共有して使う。
+ * 2回目以降の呼び出しでは既存の要素を返す。
  * 引数: なし．
  * 戻り値:
  *   HTMLElement: モーダルのオーバーレイ要素。
  */
-function ensureNewsModal() {
-  let overlay = document.querySelector(".news-modal-overlay");
+function ensureMediaModal() {
+  let overlay = document.querySelector(".media-modal-overlay");
   if (overlay) return overlay;
 
   overlay = document.createElement("div");
-  overlay.className = "news-modal-overlay";
+  overlay.className = "media-modal-overlay";
   overlay.hidden = true;
   overlay.innerHTML = `
-    <div class="news-modal" role="dialog" aria-modal="true" aria-labelledby="news-modal-title">
-      <button type="button" class="news-modal-close" aria-label="閉じる">×</button>
-      <div class="news-modal-carousel" hidden>
-        <button type="button" class="news-modal-carousel-btn news-modal-carousel-prev" aria-label="前の画像">‹</button>
-        <img class="news-modal-carousel-img" src="" alt="">
-        <button type="button" class="news-modal-carousel-btn news-modal-carousel-next" aria-label="次の画像">›</button>
-        <p class="news-modal-carousel-count"></p>
+    <div class="media-modal" role="dialog" aria-modal="true" aria-labelledby="media-modal-title">
+      <button type="button" class="media-modal-close" aria-label="閉じる">×</button>
+      <div class="media-modal-carousel" hidden>
+        <button type="button" class="media-modal-carousel-btn media-modal-carousel-prev" aria-label="前の画像">‹</button>
+        <img class="media-modal-carousel-img" src="" alt="">
+        <button type="button" class="media-modal-carousel-btn media-modal-carousel-next" aria-label="次の画像">›</button>
+        <p class="media-modal-carousel-count"></p>
       </div>
-      <div class="news-modal-body">
-        <time class="news-modal-date"></time>
-        <h2 id="news-modal-title" class="news-modal-title"></h2>
-        <div class="news-modal-text"></div>
+      <div class="media-modal-body">
+        <p class="media-modal-eyebrow"></p>
+        <h2 id="media-modal-title" class="media-modal-title"></h2>
+        <div class="media-modal-text"></div>
       </div>
     </div>
   `;
   document.body.appendChild(overlay);
 
-  overlay.querySelector(".news-modal-close").addEventListener("click", closeNewsModal);
+  overlay.querySelector(".media-modal-close").addEventListener("click", closeMediaModal);
   overlay.addEventListener("click", (event) => {
-    if (event.target === overlay) closeNewsModal();
+    if (event.target === overlay) closeMediaModal();
   });
-  overlay.querySelector(".news-modal-carousel-prev").addEventListener("click", () => stepNewsModalCarousel(-1));
-  overlay.querySelector(".news-modal-carousel-next").addEventListener("click", () => stepNewsModalCarousel(1));
+  overlay.querySelector(".media-modal-carousel-prev").addEventListener("click", () => stepMediaModalCarousel(-1));
+  overlay.querySelector(".media-modal-carousel-next").addEventListener("click", () => stepMediaModalCarousel(1));
 
   document.addEventListener("keydown", (event) => {
-    if (event.key === "Escape" && !overlay.hidden) closeNewsModal();
-    if (!overlay.hidden && event.key === "ArrowLeft") stepNewsModalCarousel(-1);
-    if (!overlay.hidden && event.key === "ArrowRight") stepNewsModalCarousel(1);
+    if (event.key === "Escape" && !overlay.hidden) closeMediaModal();
+    if (!overlay.hidden && event.key === "ArrowLeft") stepMediaModalCarousel(-1);
+    if (!overlay.hidden && event.key === "ArrowRight") stepMediaModalCarousel(1);
   });
 
   return overlay;
@@ -263,11 +367,11 @@ function ensureNewsModal() {
  *   delta (number): 進める枚数（-1で前へ，+1で次へ）。
  * 戻り値: なし．
  */
-function stepNewsModalCarousel(delta) {
-  if (newsModalState.images.length <= 1) return;
-  const count = newsModalState.images.length;
-  newsModalState.currentIndex = (newsModalState.currentIndex + delta + count) % count;
-  renderNewsModalCarouselFrame();
+function stepMediaModalCarousel(delta) {
+  if (mediaModalState.images.length <= 1) return;
+  const count = mediaModalState.images.length;
+  mediaModalState.currentIndex = (mediaModalState.currentIndex + delta + count) % count;
+  renderMediaModalCarouselFrame();
 }
 
 /**
@@ -275,75 +379,76 @@ function stepNewsModalCarousel(delta) {
  * 引数: なし．
  * 戻り値: なし．
  */
-function renderNewsModalCarouselFrame() {
-  const overlay = ensureNewsModal();
-  const img = overlay.querySelector(".news-modal-carousel-img");
-  const count = overlay.querySelector(".news-modal-carousel-count");
-  const current = newsModalState.images[newsModalState.currentIndex];
+function renderMediaModalCarouselFrame() {
+  const overlay = ensureMediaModal();
+  const img = overlay.querySelector(".media-modal-carousel-img");
+  const count = overlay.querySelector(".media-modal-carousel-count");
+  const current = mediaModalState.images[mediaModalState.currentIndex];
   if (!current) return;
   img.src = current.url;
   img.alt = current.alt || "";
-  count.textContent = newsModalState.images.length > 1
-    ? `${newsModalState.currentIndex + 1} / ${newsModalState.images.length}`
+  count.textContent = mediaModalState.images.length > 1
+    ? `${mediaModalState.currentIndex + 1} / ${mediaModalState.images.length}`
     : "";
 }
 
 /**
- * 指定したニュース1件の詳細をポップアップ（モーダル）で開く関数．
- * bodyは"\n"区切りで複数の段落として表示し，imagesが複数ある場合は
- * 矢印ボタンで送れる画像カルーセルを表示する。
+ * ポップアップ（モーダル）を，指定した内容で開く関数．
+ * ニュース詳細（日付・タイトル・本文・画像）と，学会行脚マップの
+ * 都道府県別写真（都道府県名・案内文・画像）の両方から共通して呼び出される。
  * 引数:
- *   item (object): { date, title, body, images } を持つニュース1件。
+ *   options (object):
+ *     eyebrow (string): タイトル上に小さく表示するラベル（日付やカテゴリ名）。
+ *     title (string): 見出し。
+ *     bodyLines (Array<string>): 本文の各行（空行は無視される）。
+ *     images (Array<{url: string, alt: string}>): 表示する画像一覧。
  * 戻り値: なし．
  */
-function openNewsModal(item) {
-  const overlay = ensureNewsModal();
+function openMediaModal({ eyebrow, title, bodyLines, images }) {
+  const overlay = ensureMediaModal();
 
-  overlay.querySelector(".news-modal-date").textContent = formatNewsDateLabel(item.date);
-  overlay.querySelector(".news-modal-title").textContent = item.title;
+  overlay.querySelector(".media-modal-eyebrow").textContent = eyebrow ?? "";
+  overlay.querySelector(".media-modal-title").textContent = title ?? "";
 
-  const bodyParagraphs = (item.body ?? "")
-    .split("\n")
-    .filter((line) => line.trim().length > 0)
+  const bodyParagraphs = (bodyLines ?? [])
+    .filter((line) => (line ?? "").trim().length > 0)
     .map((line) => `<p>${escapeHtml(line)}</p>`)
     .join("");
-  overlay.querySelector(".news-modal-text").innerHTML = bodyParagraphs;
+  overlay.querySelector(".media-modal-text").innerHTML = bodyParagraphs;
 
-  const resolvedImages = (item.images ?? [])
-    .map((image) => ({ url: resolveNewsImage(image.src), alt: image.alt }))
-    .filter((image) => Boolean(image.url));
+  const resolvedImages = (images ?? []).filter((image) => Boolean(image.url));
 
-  const carousel = overlay.querySelector(".news-modal-carousel");
-  const prevBtn = overlay.querySelector(".news-modal-carousel-prev");
-  const nextBtn = overlay.querySelector(".news-modal-carousel-next");
+  const carousel = overlay.querySelector(".media-modal-carousel");
+  const prevBtn = overlay.querySelector(".media-modal-carousel-prev");
+  const nextBtn = overlay.querySelector(".media-modal-carousel-next");
   if (resolvedImages.length > 0) {
-    newsModalState.images = resolvedImages;
-    newsModalState.currentIndex = 0;
+    mediaModalState.images = resolvedImages;
+    mediaModalState.currentIndex = 0;
     carousel.hidden = false;
     const multiple = resolvedImages.length > 1;
     prevBtn.hidden = !multiple;
     nextBtn.hidden = !multiple;
-    renderNewsModalCarouselFrame();
+    renderMediaModalCarouselFrame();
   } else {
-    newsModalState.images = [];
+    mediaModalState.images = [];
     carousel.hidden = true;
   }
 
   overlay.hidden = false;
-  document.body.classList.add("news-modal-open");
-  overlay.querySelector(".news-modal-close").focus();
+  document.body.classList.add("media-modal-open");
+  overlay.querySelector(".media-modal-close").focus();
 }
 
 /**
- * ニュース詳細のポップアップ（モーダル）を閉じる関数．
+ * ポップアップ（モーダル）を閉じる関数．
  * 引数: なし．
  * 戻り値: なし．
  */
-function closeNewsModal() {
-  const overlay = document.querySelector(".news-modal-overlay");
+function closeMediaModal() {
+  const overlay = document.querySelector(".media-modal-overlay");
   if (!overlay) return;
   overlay.hidden = true;
-  document.body.classList.remove("news-modal-open");
+  document.body.classList.remove("media-modal-open");
 }
 
 /**
@@ -465,6 +570,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initScrollProgress();
   renderNewsList();
   renderNewsPhotoSlider();
+  renderConferenceMap();
   initTabs();
   initAccordions();
   initIframeHeightReporter();

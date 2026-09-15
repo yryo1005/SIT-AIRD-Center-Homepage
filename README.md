@@ -75,6 +75,20 @@
 
 `src/shared/script.js`が`import.meta.glob`で`src/data/news/`以下の全JSONファイルを読み込み、ニュース一覧ページの全件一覧（クリックすると本文・画像をポップアップ表示）と、トップページ・ニュースページの写真スライダーの両方を、ページ読み込み時にJavaScriptで自動描画しています。件数表示（「全21件」の21の部分）も、読み込んだファイルの件数から自動的に計算されるため、手で書き換える必要はありません。
 
+## 学会行脚マップに都道府県ごとの写真を追加する方法
+
+学会行脚マップ（`src/pages/conference-map/`）は、AI R&D Centerのメンバーが学会発表等で訪れた都道府県を地図上に示し、クリックするとその都道府県の写真をポップアップ表示するページです。
+
+**重要な前提**：このサイトはサーバーを持たない静的サイト（GitHub Pages）です。そのため、Webページを見ている人がブラウザから直接写真を送信してその場で公開する、という仕組み（一般的な意味での「アップロード」）は持てません。かわりに、ニュース画像と同じ「リポジトリに画像ファイルを追加してpushする」という方法で、写真を追加・公開します。テキストエディタでのJSON編集すら不要で、**画像ファイルを正しいフォルダに置くだけ**で反映されます。
+
+### 手順
+
+1. `src/assets/images/conference-map/`の下に、都道府県ごとのフォルダがあります（例：`hiroshima/`）。まだ写真がない都道府県の場合は、このフォルダ自体が無いので、都道府県キーの名前でフォルダを新しく作成してください。都道府県キーの一覧は`src/data/prefectures.js`に定義されています（例：`hokkaido`・`tokyo`・`kanagawa`・`osaka`・`hiroshima`・`fukuoka`・`okinawa`等，英語のローマ字表記）。
+2. そのフォルダの中に，写真ファイル（jpg/jpeg/png等）をコピーします。1つの都道府県に複数枚の写真があっても構いません（ポップアップ内で矢印送りのカルーセルとして表示されます）。
+3. ファイルを保存し、`git add`・`git commit`・`git push`すると、数分後にGitHub Pages上のマップに反映されます。
+
+JSONファイルの追記やコードの変更は一切不要です。地図上のマーカーは，対応するフォルダに画像が1枚でもあれば自動的に色付き（クリック可能）になり，無い都道府県は淡い色のマーカーのまま「まだ写真が登録されていません」という案内が表示されます。
+
 ## 配信アーキテクチャ
 
 ```
@@ -101,8 +115,10 @@ project/
 │   │   ├── style.css     ← 全ページ共通スタイル（白＋青のライトテーマ）
 │   │   └── script.js     ← 共通スクリプト（ナビ開閉・進捗バー・ニュース描画・タブ・アコーディオン・iframe高さ通知）
 │   ├── data/
-│   │   └── news/          ← ニュースのデータ（1件＝1つのJSONファイル。HTML/JSの知識なしで編集可能。後述）
-│   ├── assets/images/    ← ガイダンス資料等から抽出した教員写真・施設写真
+│   │   ├── news/           ← ニュースのデータ（1件＝1つのJSONファイル。HTML/JSの知識なしで編集可能。後述）
+│   │   └── prefectures.js  ← 学会行脚マップの47都道府県マーカー定義（位置・キー・名前）
+│   ├── assets/images/
+│   │   └── conference-map/<都道府県キー>/  ← 学会行脚マップの都道府県別写真（後述）
 │   └── pages/
 │       ├── top/index.html
 │       ├── news/index.html
@@ -111,6 +127,7 @@ project/
 │       ├── embedded/index.html
 │       ├── image/index.html
 │       ├── nlp/index.html
+│       ├── conference-map/index.html
 ├── cms-shells/            ← ArtisCMS3の「埋め込みHTML」欄に貼るページごとの短いiframeシェル
 │   ├── top.html
 │   ├── news.html
@@ -119,6 +136,7 @@ project/
 │   ├── embedded.html
 │   ├── image.html
 │   ├── nlp.html
+│   ├── conference-map.html
 ├── scripts/
 │   ├── generate-cms-shells.js   ← site.config.jsからcms-shells/*.htmlを生成
 │   ├── verify-cms-shells.js     ← cms-shells/README.mdとsite.config.jsの整合性・公開URLの疎通を検証
@@ -197,6 +215,7 @@ npm run dev
 - `http://localhost:5173/src/pages/embedded/index.html`
 - `http://localhost:5173/src/pages/image/index.html`
 - `http://localhost:5173/src/pages/nlp/index.html`
+- `http://localhost:5173/src/pages/conference-map/index.html`
 
 現在の内部リンクは`github-pages`モード（相対パス、`target="_top"`なし）になっているため、開発サーバー上でもヘッダー・フッターのナビゲーションをクリックしてそのままページ間を移動できます。CMSへの埋め込みを想定した動作を確認したい場合は、`node scripts/set-link-mode.js cms`を実行してから同様に確認してください（確認後は`node scripts/set-link-mode.js github-pages`で戻せます）。
 
@@ -227,6 +246,7 @@ npm run preview
 - 組込AI：`https://yryo1005.github.io/SIT-AIRD-Center-Homepage/src/pages/embedded/index.html`
 - 画像処理：`https://yryo1005.github.io/SIT-AIRD-Center-Homepage/src/pages/image/index.html`
 - NLP：`https://yryo1005.github.io/SIT-AIRD-Center-Homepage/src/pages/nlp/index.html`
+- 学会行脚マップ：`https://yryo1005.github.io/SIT-AIRD-Center-Homepage/src/pages/conference-map/index.html`
 
 GitHub Pagesを初めて有効化する場合は、リポジトリの Settings → Pages で Source を「GitHub Actions」に設定してください（このリポジトリでは`peaceiris`系のgh-pagesブランチ運用ではなく、`actions/deploy-pages`による直接デプロイを使用しています）。
 
@@ -243,6 +263,7 @@ GitHub Pagesを初めて有効化する場合は、リポジトリの Settings �
 | `cms-shells/embedded.html` | `/faculties/research-center/ai_rd_center/embedded/` |
 | `cms-shells/image.html` | `/faculties/research-center/ai_rd_center/image/` |
 | `cms-shells/nlp.html` | `/faculties/research-center/ai_rd_center/nlp/` |
+| `cms-shells/conference-map.html` | `/faculties/research-center/ai_rd_center/conference-map/` |
 
 各ファイルはUTF-8（BOMなし）で保存されています。**CMS編集画面側の文字コード設定がUTF-8以外の場合、貼り付け後に文字化けする可能性があるため、貼り付け後は必ずプレビューで日本語表示を確認してください。** iframeの`src`はGitHub PagesのURLを直接指定しているため、この設定は最初の1回だけ行えば、以降はGitHubにpushするだけで表示内容が更新されます。
 
@@ -259,6 +280,7 @@ GitHub Pagesを初めて有効化する場合は、リポジトリの Settings �
 | `src/pages/embedded/` | `https://yryo1005.github.io/SIT-AIRD-Center-Homepage/src/pages/embedded/index.html` | （未記入） |
 | `src/pages/image/` | `https://yryo1005.github.io/SIT-AIRD-Center-Homepage/src/pages/image/index.html` | （未記入） |
 | `src/pages/nlp/` | `https://yryo1005.github.io/SIT-AIRD-Center-Homepage/src/pages/nlp/index.html` | （未記入） |
+| `src/pages/conference-map/` | `https://yryo1005.github.io/SIT-AIRD-Center-Homepage/src/pages/conference-map/index.html` | （未記入） |
 
 ## 文字コードに関する注意事項
 

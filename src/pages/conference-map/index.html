@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>学会行脚マップ | AI R&amp;D Center</title>
+  <meta name="description" content="AI R&D Centerのメンバーが学会発表等で訪れた都道府県をまとめた地図です。都道府県をクリックすると現地の写真を確認できます。">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700;9..144,900&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/src/shared/style.css">
+</head>
+<body>
+  <div class="scroll-progress"></div>
+  <header class="site-header">
+    <div class="container">
+      <a class="brand" href="../top/index.html" data-link="top">
+        <span class="brand-mark"></span>
+        <span class="brand-ja">AI R&amp;D Center</span>
+      </a>
+      <button class="nav-toggle" type="button" aria-expanded="false" aria-label="メニューを開閉する">≡</button>
+      <nav class="main-nav" aria-label="サイト内ナビゲーション">
+        <a href="../top/index.html" data-link="top">トップ</a>
+        <a href="../news/index.html" data-link="news">ニュース</a>
+        <a href="../top/index.html#faculty" data-link="top" data-hash="faculty">指導教員</a>
+        <a href="../facility/index.html" data-link="facility">施設</a>
+        <a href="../basic-research/index.html" data-link="basic-research">基礎研究</a>
+        <a href="../embedded/index.html" data-link="embedded">組込AI</a>
+        <a href="../image/index.html" data-link="image">画像処理</a>
+        <a href="../nlp/index.html" data-link="nlp">NLP</a>
+        <a href="../conference-map/index.html" data-link="conference-map" aria-current="page">学会マップ</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="page-hero">
+      <div class="container">
+        <p class="breadcrumb"><a href="../top/index.html" data-link="top">AI R&amp;D Center</a> / 学会行脚マップ</p>
+        <p class="hero-eyebrow"><span class="rule"></span>Conference Map</p>
+        <h1>学会行脚マップ</h1>
+        <p class="page-hero-lead">AI R&amp;D Centerのメンバーが学会発表・研究会等で訪れた都道府県の地図です。色が付いている都道府県をクリックすると，現地の写真を見ることができます。</p>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container">
+        <div class="conf-map-layout">
+          <div class="conf-map-wrap">
+            <svg class="jp-map" data-source="conference-map" viewBox="0 0 520 520" role="img" aria-label="日本地図（都道府県別）"></svg>
+          </div>
+          <div class="conf-map-side">
+            <div class="conf-map-legend">
+              <p><span class="conf-map-dot conf-map-dot--filled" aria-hidden="true"></span>写真が登録されている都道府県</p>
+              <p><span class="conf-map-dot" aria-hidden="true"></span>まだ写真が登録されていない都道府県</p>
+            </div>
+            <div class="notice-panel">
+              <p class="mt-0">
+                この地図はおおまかな位置関係を示す模式図であり，正確な行政区画の形状ではありません。
+                写真は，どの都道府県でも<code>src/assets/images/conference-map/&lt;都道府県キー&gt;/</code>フォルダに画像ファイルを追加するだけで反映されます（詳しい手順はREADME.mdを参照）。
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script type="module" src="/src/shared/script.js"></script>
+</body>
+</html>
