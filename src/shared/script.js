@@ -32,6 +32,17 @@ const researchData = Object.keys(researchModules)
   .map((key) => researchModules[key].default ?? researchModules[key]);
 
 /**
+ * src/data/students/以下の個別「学生の声」JSONファイルを，ビルド時に静的インポートする。
+ * 1ファイル＝1名で，{ name, meta, researchTitle, researchSummary, quote, image }
+ * の項目を持つ（quoteは無い場合もある）。研究内容ページ・在学生向けページの
+ * 両方で，このデータソースを共通で参照する。
+ */
+const studentModules = import.meta.glob("../data/students/*.json", { eager: true });
+const studentsData = Object.keys(studentModules)
+  .sort()
+  .map((key) => studentModules[key].default ?? studentModules[key]);
+
+/**
  * src/assets/images/以下の全画像ファイルを，ビルド時にVite側で
  * ハッシュ付きの本番URLへ解決するための一覧．ニュースJSON内のimages[].srcや，
  * 学会行脚マップの画像フォルダは"news/xxx.jpg"のようにsrc/assets/images/からの
@@ -220,6 +231,41 @@ function renderResearchItems() {
       `;
     })
     .join("");
+}
+
+/**
+ * 「学生の声」を，指定した要素（`.voice-list[data-source="students-json"]`）へ
+ * 描画する関数．研究内容ページ・在学生向けページの両方から，同じ
+ * src/data/students/以下のデータを参照して表示できるよう共通化している。
+ * 該当要素がないページでは何もしない。
+ * 引数: なし．
+ * 戻り値: なし．
+ */
+function renderStudentVoices() {
+  document.querySelectorAll('.voice-list[data-source="students-json"]').forEach((list) => {
+    list.innerHTML = studentsData
+      .map((student) => {
+        const imageUrl = student.image ? resolveImagePath(student.image.src) : null;
+        const photo = imageUrl
+          ? `<img class="voice-photo" src="${escapeHtml(imageUrl)}" alt="${escapeHtml(student.image.alt || student.name)}">`
+          : "";
+        const quote = student.quote
+          ? `<p class="voice-quote">「${escapeHtml(student.quote)}」</p>`
+          : "";
+        return `
+          <article class="voice-card">
+            ${photo}
+            <div>
+              <p class="voice-meta">${escapeHtml(student.name)} ｜ ${escapeHtml(student.meta ?? "")}</p>
+              <h3>${escapeHtml(student.researchTitle ?? "")}</h3>
+              <p class="text-muted">${escapeHtml(student.researchSummary ?? "")}</p>
+              ${quote}
+            </div>
+          </article>
+        `;
+      })
+      .join("");
+  });
 }
 
 /**
@@ -845,6 +891,7 @@ document.addEventListener("DOMContentLoaded", () => {
   renderNewsList();
   renderNewsPhotoSlider();
   renderResearchItems();
+  renderStudentVoices();
   renderConferenceMap();
   renderFacilityRooms();
   initTabs();

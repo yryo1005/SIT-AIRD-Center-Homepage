@@ -13,11 +13,11 @@ v2では，v1で採用していた「build.jsでCSS/JSをインライン展開�
 | パス | 役割 |
 | :--- | :--- |
 | `src/shared/style.css` | 全ページ共通のスタイルシート．**白背景＋青アクセントのライトテーマ**（order_005でダークテーマから刷新）．Fraunces／Inter／IBM Plex Monoのタイポグラフィ，カード・アコーディオン・ミニカルーセル・モーダル等のコンポーネントを定義する． |
-| `src/shared/script.js` | 全ページ共通のスクリプト．ナビゲーション開閉，スクロール進捗バー，ニュース／研究内容のJSON描画，アコーディオン開閉，ミニカルーセル（複数画像の横スライド切り替え），汎用ポップアップ（`openMediaModal()`），学会行脚マップ・施設ページのフォルダアップロード対応描画に加え，「iframe埋め込み時に本文の高さを親ウィンドウへ通知する処理」を含む．文字のみのニューストリッカーとタブ切り替えUIはorder_010・013で廃止済み． |
-| `src/pages/*/index.html` | 各ページのHTMLソース（現在5ページ：top／news／facility／basic-research（表示名は「研究内容」）／conference-map。組込AI・画像処理・NLPの3ページはorder_014で研究内容ページへ統合され廃止）．`<!DOCTYPE html>`から始まる完全なHTMLドキュメントで，`<head>`の最初の子要素として`<meta charset="UTF-8">`を宣言する．内部リンクはすべてルート相対パス＋`target="_top"`． |
+| `src/shared/script.js` | 全ページ共通のスクリプト．ナビゲーション開閉，スクロール進捗バー，ニュース／研究内容／学生の声のJSON描画，アコーディオン開閉，ミニカルーセル（複数画像の横スライド切り替え），汎用ポップアップ（`openMediaModal()`），学会行脚マップ・施設ページのフォルダアップロード対応描画に加え，「iframe埋め込み時に本文の高さを親ウィンドウへ通知する処理」を含む．文字のみのニューストリッカーとタブ切り替えUIはorder_010・013で廃止済み． |
+| `src/pages/*/index.html` | 各ページのHTMLソース（現在7ページ：top／news／facility／basic-research（表示名は「研究内容」）／conference-map／join（在学生の方へ）／for-highschool（高校生の方へ）。組込AI・画像処理・NLPの3ページはorder_014で研究内容ページへ統合され廃止）．`<!DOCTYPE html>`から始まる完全なHTMLドキュメントで，`<head>`の最初の子要素として`<meta charset="UTF-8">`を宣言する．内部リンクはすべてルート相対パス＋`target="_top"`． |
 | `index.html`（リポジトリルート） | ローカル確認専用の開発用インデックスページ．各ページへのリンク一覧を表示する．CMS・本番公開の対象ではない． |
-| `vite.config.js` | Viteのビルド設定．`src/pages/*/index.html`（8ファイル）とルートの`index.html`を複数エントリとして`dist/`へビルドする．GitHub Pagesのサブパス公開に対応するため，`mode`が`"production"`のとき（`vite build`・`vite preview`）のみ`base`を`/SIT-AIRD-Center-Homepage/`に設定する． |
-| `cms-shells/*.html` | ArtisCMS3の「埋め込みHTML」欄に貼り付けるための，ページごとの短いiframeシェル（8ファイル）．GitHub PagesのURLを`src`に持つ`iframe`と，高さ調整用の`postMessage`受信スクリプトから成る．**手動編集はせず，`scripts/generate-cms-shells.js`で`site.config.js`から生成する．** |
+| `vite.config.js` | Viteのビルド設定．`src/pages/*/index.html`（7ファイル）とルートの`index.html`を複数エントリとして`dist/`へビルドする．GitHub Pagesのサブパス公開に対応するため，`mode`が`"production"`のとき（`vite build`・`vite preview`）のみ`base`を`/SIT-AIRD-Center-Homepage/`に設定する． |
+| `cms-shells/*.html` | ArtisCMS3の「埋め込みHTML」欄に貼り付けるための，ページごとの短いiframeシェル（7ファイル）．GitHub PagesのURLを`src`に持つ`iframe`と，高さ調整用の`postMessage`受信スクリプトから成る．**手動編集はせず，`scripts/generate-cms-shells.js`で`site.config.js`から生成する．** |
 | `site.config.js` | GitHub PagesのベースURL（`BASE_PATH`・`SITE_BASE_URL`）とページ一覧（`PAGES`）を定義する単一の情報源．`vite.config.js`と`scripts/generate-cms-shells.js`の両方がここから読み込む（order_003対応で追加）． |
 | `scripts/generate-cms-shells.js` | `site.config.js`から`cms-shells/*.html`を生成するスクリプト（order_003対応で追加）． |
 | `scripts/verify-cms-shells.js` | `cms-shells/*.html`が`site.config.js`の内容と一致しているか，README.md記載のURLと一致しているか，（`--live`指定時）GitHub Pages公開URLが実際に200を返すかを検証するスクリプト（order_003対応で追加）． |
@@ -44,14 +44,19 @@ flowchart TD
     D --> J
     K["src/pages/conference-map/index.html"] --> S
     K --> J
+    L["src/pages/join/index.html（在学生の方へ）"] --> S
+    L --> J
+    M["src/pages/for-highschool/index.html（高校生の方へ）"] --> S
+    M --> J
 
     J -->|"import.meta.glob"| ND["src/data/news/*.json"]
     J -->|"import.meta.glob"| RD["src/data/research/*.json"]
+    J -->|"import.meta.glob"| SD["src/data/students/*.json"]
     J --> PF["src/data/prefectures.js"]
     J --> FR["src/data/facility-rooms.js"]
     J -->|"import.meta.glob"| IMG["src/assets/images/**（全画像）"]
 
-    IDX & A & B & C & D & K --> VITE["vite build（vite.config.jsのrollupOptions.input）"]
+    IDX & A & B & C & D & K & L & M --> VITE["vite build（vite.config.jsのrollupOptions.input）"]
     VITE -->|"CSS/JS/画像をハッシュ付きファイルへバンドルし出力"| DIST["dist/（GitHub Pagesへ配信する成果物）"]
 
     DIST -->|"GitHub Actions（deploy.yml）がpush時に自動デプロイ"| PAGES["GitHub Pages（yryo1005.github.io/SIT-AIRD-Center-Homepage/...）"]
@@ -80,6 +85,7 @@ flowchart LR
     DCL --> NEWS["renderNewsList()"]
     DCL --> SLIDER["renderNewsPhotoSlider()"]
     DCL --> RESEARCH["renderResearchItems()"]
+    DCL --> VOICES["renderStudentVoices()"]
     DCL --> MAP["renderConferenceMap()"]
     DCL --> ROOMS["renderFacilityRooms()"]
     DCL --> ACC["initAccordions()"]
@@ -100,6 +106,7 @@ flowchart LR
 - `initScrollProgress`：スクロール量に応じた進捗バーの幅更新．
 - `renderNewsList`／`renderNewsPhotoSlider`：`src/data/news/*.json`（`import.meta.glob`）を読み込み，ニュース一覧・写真帯を描画する．一覧の各行クリックで`openMediaModal()`を呼ぶ（order_010）．
 - `renderResearchItems`：`src/data/research/*.json`を読み込み，研究内容ページの全研究テーマを縦1列で描画する（order_014）．
+- `renderStudentVoices`：`src/data/students/*.json`を読み込み，`.voice-list[data-source="students-json"]`に該当する要素すべて（研究内容ページ・在学生の方へページの両方）へ学生の声カードを描画する（order_016）．
 - `renderConferenceMap`：`src/data/prefectures.js`と`src/assets/images/conference-map/<都道府県キー>/`のフォルダ内画像から，学会行脚マップのSVGマーカーを描画する（order_011）．
 - `renderFacilityRooms`：`src/data/facility-rooms.js`と`src/assets/images/facility/<部屋キー>/`のフォルダ内画像から，施設ページの各部屋カードを描画する（order_012）．
 - `buildMiniCarouselHtml`／`wireMiniCarousel`：複数画像を横スライドで切り替える共通カルーセル部品．左右ボタン・自動切り替え・タップでの`openMediaModal()`呼び出しを提供する（order_013）。ニュース写真帯・施設の部屋写真の両方で使う．
@@ -390,3 +397,14 @@ npm run preview
 - 「3. 外部モジュールとの依存関係」：Google Fontsへの依存を明記し，画像が全てリポジトリ内保存済みであることに修正した。トップページのYouTube埋め込みについても追記した。
 
 いずれの変更も，公式サイト由来の実績一覧（42件）・教員情報は変更していない。詳細な確認結果は`.reports/report_015.md`を参照。
+
+## 25. 在学生向けページ・高校生向けページの新設，学生の声のデータファイル化（order_016）の内容
+
+`.orders/order_016.md`は，構成案の提示・ユーザー確認を経て実装した構造化指示書である。実装前に，ユーザーから2点の確認要請（ヘッダーナビの実際の項目数，`students.json`の「出身校」情報の出典）があり，いずれも再検証のうえで対応した（ナビは提案時の誤り「8→10項目」を「5→7項目」に訂正，出身校情報は元資料`AI専攻印刷用2026.pdf`に両名とも明記されていることを確認し，そのまま残した）。
+
+- **学生の声のデータファイル化**：`src/data/students/`に，学生1名＝1JSONファイルの形式で井上來彌・渡邉光喜の2名分（`01-inoue-kurumi.json`・`02-watanabe-kouki.json`）を作成した。既存の6件の学生の声カード（`basic-research/index.html`）のうち，データ化対象の2件をJSONへ移行し，残る4件（渡部朔冶・石川悠樹・濵田聖・山富龍）はハードコードのまま維持した（今回の指示範囲外のため）。`script.js`に`studentModules`／`studentsData`／`renderStudentVoices()`を追加し，`.voice-list[data-source="students-json"]`に該当する全要素（研究内容ページ・在学生の方へページ双方）へ同一データを描画するようにした。**新しい学生の声を推測で追加することはせず，既存2名分のみとした。**
+- **`src/pages/join/index.html`（在学生の方へ）の新設**：既存トップページの「参加案内」の内容（活動のサイクル・対外的な活動・メンバー同士の交流）を移設・拡充し，参加方法は指導教員への確認を促す記述に留め，FAQは事実で裏付けられる2件（未経験可否・学年不問）のみを掲載，先輩の声セクションは学生データを共有参照，お問い合わせは指導教員への案内のみで送信フォームは設置していない。
+- **`src/pages/for-highschool/index.html`（高校生の方へ）の新設**：平易な言葉づかいで，既存の実績・活動ハイライトの抜粋，施設写真の再利用と施設ページへのリンク，2027年新設予定の人工知能専攻についてトップページと同内容（新たな推測は追加せず），先輩の声セクション，進学関連は大学公式サイト（オープンキャンパス・入試情報）への外部リンクのみとした。
+- **サイト全体の更新**：`site.config.js`のPAGESに`join`・`for-highschool`を追加し，全7ページのヘッダーナビに新規2ページへのリンクを追加した。トップページの「参加案内」セクションは，詳細を重複記載せず，要約文＋新設2ページへのリンクカード2枚に簡略化した。`cms-shells/join.html`・`cms-shells/for-highschool.html`を生成し，README.mdの公開URL一覧・cms-shellsマッピング表・ローカル開発URL一覧・フォルダ対応表を7ページ分に更新し，「学生の声を追加・編集する方法」セクションを新設した（出典未確認の個人情報を追加しないよう明記）。
+
+いずれの変更も，公式サイト由来の実績一覧・教員情報・入試関連の確定事項を新たに記載することはしていない。詳細な確認結果は`.reports/report_016.md`を参照。

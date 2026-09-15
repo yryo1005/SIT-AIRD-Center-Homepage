@@ -61,6 +61,18 @@ export const PAGES = [
     cmsPath: "/faculties/research-center/ai_rd_center/conference-map/",
     title: "AI R&D Center 学会行脚マップ",
   },
+  {
+    key: "join",
+    srcPath: "src/pages/join/index.html",
+    cmsPath: "/faculties/research-center/ai_rd_center/join/",
+    title: "AI R&D Center 在学生の方へ",
+  },
+  {
+    key: "for-highschool",
+    srcPath: "src/pages/for-highschool/index.html",
+    cmsPath: "/faculties/research-center/ai_rd_center/for-highschool/",
+    title: "AI R&D Center 高校生の方へ",
+  },
 ];
 
 /**
