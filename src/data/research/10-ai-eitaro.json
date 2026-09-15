@@ -1,0 +1,8 @@
+{
+  "title": "特定のキャラクター性を有する学校案内ChatBot「AI Eitaro」",
+  "body": "ニューラルネットワークを用いたChatBotの普及を背景に，特定のキャラクター性を持たせた学校案内ChatBotの実装に取り組んでいる研究です．学生からの「4年生に進級するまでに何単位必要なの？」といった質問に，AIが学内情報にもとづいて音声で回答します．音声認識にWhisper，学内情報の検索にRAG（Retrieval-Augmented Generation），回答文の生成にChatGPT，文書解析にYomitoku，音声合成にZonosを組み合わせ，Flask・Ngrokでサーバー化することで，外部の端末からも利用できる構成としています．回答は，質問文に類似した学生便覧等の文章をRAGで検索し，その内容にもとづいて生成する仕組みです．",
+  "image": {
+    "src": "research/ai-eitaro-photo.jpg",
+    "alt": "大画面に表示されたAI Eitaroのチャット画面を確認するメンバー"
+  }
+}

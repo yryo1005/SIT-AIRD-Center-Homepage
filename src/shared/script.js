@@ -20,6 +20,18 @@ const newsModules = import.meta.glob("../data/news/*.json", { eager: true });
 const newsData = Object.values(newsModules).map((mod) => mod.default ?? mod);
 
 /**
+ * src/data/research/以下の個別研究内容JSONファイルを，ビルド時に静的インポートする。
+ * 1ファイル＝1研究テーマで，{ title, body, image } の3項目を持つ
+ * （imageは{ src, alt }または，画像が無い場合はnull）。
+ * 組込AI・画像処理・NLP・基礎理論等，あらゆる分野の研究テーマをこの1つの
+ * データソースに集約している。
+ */
+const researchModules = import.meta.glob("../data/research/*.json", { eager: true });
+const researchData = Object.keys(researchModules)
+  .sort()
+  .map((key) => researchModules[key].default ?? researchModules[key]);
+
+/**
  * src/assets/images/以下の全画像ファイルを，ビルド時にVite側で
  * ハッシュ付きの本番URLへ解決するための一覧．ニュースJSON内のimages[].srcや，
  * 学会行脚マップの画像フォルダは"news/xxx.jpg"のようにsrc/assets/images/からの
@@ -176,6 +188,38 @@ function renderNewsList() {
       });
     });
   });
+}
+
+/**
+ * 研究内容ページの「研究内容」セクション（.theme-stack[data-source="research-json"]）に，
+ * src/data/research/以下の全研究テーマを縦に並べて描画する関数．
+ * 組込AI・画像処理・NLP・基礎理論等，あらゆる分野の研究テーマをこの1箇所に
+ * 集約して表示する。該当要素がないページでは何もしない。
+ * 引数: なし．
+ * 戻り値: なし．
+ */
+function renderResearchItems() {
+  const list = document.querySelector('.theme-stack[data-source="research-json"]');
+  if (!list) return;
+
+  list.innerHTML = researchData
+    .map((item) => {
+      const imageUrl = item.image ? resolveImagePath(item.image.src) : null;
+      const photo = imageUrl
+        ? `<img class="card-img" src="${escapeHtml(imageUrl)}" alt="${escapeHtml(item.image.alt || item.title)}" referrerpolicy="no-referrer">`
+        : "";
+      return `
+        <div class="info-card">
+          ${photo}
+          <div class="card-body">
+            <p class="card-tag">Research Theme</p>
+            <h3>${escapeHtml(item.title)}</h3>
+            ${(item.body ?? "").split("\n").filter((line) => line.trim().length > 0).map((line) => `<p>${escapeHtml(line)}</p>`).join("")}
+          </div>
+        </div>
+      `;
+    })
+    .join("");
 }
 
 /**
@@ -800,6 +844,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initScrollProgress();
   renderNewsList();
   renderNewsPhotoSlider();
+  renderResearchItems();
   renderConferenceMap();
   renderFacilityRooms();
   initTabs();

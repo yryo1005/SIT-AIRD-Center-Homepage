@@ -92,6 +92,36 @@
 
 `src/shared/script.js`が`import.meta.glob`で`src/data/news/`以下の全JSONファイルを読み込み、ニュース一覧ページの全件一覧（クリックすると本文・画像をポップアップ表示）と、トップページ・ニュースページの写真スライダーの両方を、ページ読み込み時にJavaScriptで自動描画しています。件数表示（「全21件」の21の部分）も、読み込んだファイルの件数から自動的に計算されるため、手で書き換える必要はありません。
 
+## 研究内容を追加・編集する方法
+
+研究内容ページ（`src/pages/basic-research/index.html`。表示上の見出しは「研究内容」）に並ぶ研究テーマも，ニュースと同じ「1件＝1つのJSONファイル」の仕組みです。組込AI・画像処理・NLP・基礎理論など，あらゆる分野の研究テーマをこの1箇所に集約しています。
+
+### 1. ファイルの場所と構成
+
+`src/data/research/`フォルダの中に，研究テーマ1件につき1つのJSONファイルを置きます。ファイル名は自由です（他のファイルと重複しなければ構いません）。
+
+中身は次の3項目だけを持つシンプルな形です。
+
+```json
+{
+  "title": "大喜利生成AI",
+  "body": "「笑いは日常生活で重要な要素です．この笑いをAIで提供できないか」という発想から開始した研究です．画像に対する大喜利を生成するAIシステムを開発しています．",
+  "image": { "src": "research/oogiri-generation-ai.jpg", "alt": "大喜利生成AIの出力をディスプレイで確認している様子" }
+}
+```
+
+| 項目名 | 内容 | 必須 |
+| :--- | :--- | :--- |
+| `title` | 研究テーマの見出し | 必須 |
+| `body` | 研究内容の説明文。複数段落にしたい場合は`\n`で行を分ける | 必須 |
+| `image` | 画像。`src`（`src/assets/images/research/`からの相対パス）と`alt`（説明文）を持つオブジェクト。画像が無い場合は`null` | 必須（無ければ`null`） |
+
+画像を追加したい場合は，画像ファイルを`src/assets/images/research/`フォルダにコピーしてから，`image`にファイル名を含む相対パスを指定してください。
+
+### 2. 保存して公開する
+
+ファイルを保存し，`git add`・`git commit`・`git push`すると，数分後にGitHub Pages上の研究内容ページに反映されます。並び順はファイル名の並び順（アルファベット順）になるため，特定の順序で表示したい場合はファイル名の先頭に`01-`のような連番を付けてください。
+
 ## 学会行脚マップに都道府県ごとの写真を追加する方法
 
 学会行脚マップ（`src/pages/conference-map/`）は、AI R&D Centerのメンバーが学会発表等で訪れた都道府県を地図上に示し、クリックするとその都道府県の写真をポップアップ表示するページです。
@@ -140,27 +170,23 @@ project/
 │   │   ├── style.css     ← 全ページ共通スタイル（白＋青のライトテーマ）
 │   │   └── script.js     ← 共通スクリプト（ナビ開閉・進捗バー・ニュース描画・タブ・アコーディオン・iframe高さ通知）
 │   ├── data/
-│   │   ├── news/           ← ニュースのデータ（1件＝1つのJSONファイル。HTML/JSの知識なしで編集可能。後述）
-│   │   └── prefectures.js  ← 学会行脚マップの47都道府県マーカー定義（位置・キー・名前）
+│   │   ├── news/            ← ニュースのデータ（1件＝1つのJSONファイル。HTML/JSの知識なしで編集可能。後述）
+│   │   ├── research/        ← 研究内容のデータ（1件＝1つのJSONファイル。後述）
+│   │   ├── prefectures.js   ← 学会行脚マップの47都道府県マーカー定義（位置・キー・名前）
+│   │   └── facility-rooms.js ← 施設ページの部屋定義（キー・名前・説明文）
 │   ├── assets/images/
 │   │   └── conference-map/<都道府県キー>/  ← 学会行脚マップの都道府県別写真（後述）
 │   └── pages/
 │       ├── top/index.html
 │       ├── news/index.html
 │       ├── facility/index.html
-│       ├── basic-research/index.html
-│       ├── embedded/index.html
-│       ├── image/index.html
-│       ├── nlp/index.html
+│       ├── basic-research/index.html  ← 研究内容ページ（旧・基礎研究ページ。全研究テーマを集約）
 │       ├── conference-map/index.html
 ├── cms-shells/            ← ArtisCMS3の「埋め込みHTML」欄に貼るページごとの短いiframeシェル
 │   ├── top.html
 │   ├── news.html
 │   ├── facility.html
 │   ├── basic-research.html
-│   ├── embedded.html
-│   ├── image.html
-│   ├── nlp.html
 │   ├── conference-map.html
 ├── scripts/
 │   ├── generate-cms-shells.js   ← site.config.jsからcms-shells/*.htmlを生成
@@ -237,9 +263,6 @@ npm run dev
 - `http://localhost:5173/src/pages/news/index.html`
 - `http://localhost:5173/src/pages/facility/index.html`
 - `http://localhost:5173/src/pages/basic-research/index.html`
-- `http://localhost:5173/src/pages/embedded/index.html`
-- `http://localhost:5173/src/pages/image/index.html`
-- `http://localhost:5173/src/pages/nlp/index.html`
 - `http://localhost:5173/src/pages/conference-map/index.html`
 
 現在の内部リンクは`github-pages`モード（相対パス、`target="_top"`なし）になっているため、開発サーバー上でもヘッダー・フッターのナビゲーションをクリックしてそのままページ間を移動できます。CMSへの埋め込みを想定した動作を確認したい場合は、`node scripts/set-link-mode.js cms`を実行してから同様に確認してください（確認後は`node scripts/set-link-mode.js github-pages`で戻せます）。
@@ -267,10 +290,7 @@ npm run preview
 - トップ：`https://yryo1005.github.io/SIT-AIRD-Center-Homepage/src/pages/top/index.html`
 - ニュース：`https://yryo1005.github.io/SIT-AIRD-Center-Homepage/src/pages/news/index.html`
 - 施設：`https://yryo1005.github.io/SIT-AIRD-Center-Homepage/src/pages/facility/index.html`
-- 基礎研究：`https://yryo1005.github.io/SIT-AIRD-Center-Homepage/src/pages/basic-research/index.html`
-- 組込AI：`https://yryo1005.github.io/SIT-AIRD-Center-Homepage/src/pages/embedded/index.html`
-- 画像処理：`https://yryo1005.github.io/SIT-AIRD-Center-Homepage/src/pages/image/index.html`
-- NLP：`https://yryo1005.github.io/SIT-AIRD-Center-Homepage/src/pages/nlp/index.html`
+- 研究内容：`https://yryo1005.github.io/SIT-AIRD-Center-Homepage/src/pages/basic-research/index.html`
 - 学会行脚マップ：`https://yryo1005.github.io/SIT-AIRD-Center-Homepage/src/pages/conference-map/index.html`
 
 GitHub Pagesを初めて有効化する場合は、リポジトリの Settings → Pages で Source を「GitHub Actions」に設定してください（このリポジトリでは`peaceiris`系のgh-pagesブランチ運用ではなく、`actions/deploy-pages`による直接デプロイを使用しています）。
@@ -285,9 +305,6 @@ GitHub Pagesを初めて有効化する場合は、リポジトリの Settings �
 | `cms-shells/news.html` | `/faculties/research-center/ai_rd_center/news/` |
 | `cms-shells/facility.html` | `/faculties/research-center/ai_rd_center/facility/` |
 | `cms-shells/basic-research.html` | `/faculties/research-center/ai_rd_center/basick_reserch/` |
-| `cms-shells/embedded.html` | `/faculties/research-center/ai_rd_center/embedded/` |
-| `cms-shells/image.html` | `/faculties/research-center/ai_rd_center/image/` |
-| `cms-shells/nlp.html` | `/faculties/research-center/ai_rd_center/nlp/` |
 | `cms-shells/conference-map.html` | `/faculties/research-center/ai_rd_center/conference-map/` |
 
 各ファイルはUTF-8（BOMなし）で保存されています。**CMS編集画面側の文字コード設定がUTF-8以外の場合、貼り付け後に文字化けする可能性があるため、貼り付け後は必ずプレビューで日本語表示を確認してください。** iframeの`src`はGitHub PagesのURLを直接指定しているため、この設定は最初の1回だけ行えば、以降はGitHubにpushするだけで表示内容が更新されます。
@@ -302,9 +319,6 @@ GitHub Pagesを初めて有効化する場合は、リポジトリの Settings �
 | `src/pages/news/` | `https://yryo1005.github.io/SIT-AIRD-Center-Homepage/src/pages/news/index.html` | （未記入） |
 | `src/pages/facility/` | `https://yryo1005.github.io/SIT-AIRD-Center-Homepage/src/pages/facility/index.html` | （未記入） |
 | `src/pages/basic-research/` | `https://yryo1005.github.io/SIT-AIRD-Center-Homepage/src/pages/basic-research/index.html` | （未記入） |
-| `src/pages/embedded/` | `https://yryo1005.github.io/SIT-AIRD-Center-Homepage/src/pages/embedded/index.html` | （未記入） |
-| `src/pages/image/` | `https://yryo1005.github.io/SIT-AIRD-Center-Homepage/src/pages/image/index.html` | （未記入） |
-| `src/pages/nlp/` | `https://yryo1005.github.io/SIT-AIRD-Center-Homepage/src/pages/nlp/index.html` | （未記入） |
 | `src/pages/conference-map/` | `https://yryo1005.github.io/SIT-AIRD-Center-Homepage/src/pages/conference-map/index.html` | （未記入） |
 
 ## 文字コードに関する注意事項

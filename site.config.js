@@ -53,25 +53,7 @@ export const PAGES = [
     key: "basic-research",
     srcPath: "src/pages/basic-research/index.html",
     cmsPath: "/faculties/research-center/ai_rd_center/basick_reserch/",
-    title: "AI R&D Center 基礎研究",
-  },
-  {
-    key: "embedded",
-    srcPath: "src/pages/embedded/index.html",
-    cmsPath: "/faculties/research-center/ai_rd_center/embedded/",
-    title: "AI R&D Center 組込AI",
-  },
-  {
-    key: "image",
-    srcPath: "src/pages/image/index.html",
-    cmsPath: "/faculties/research-center/ai_rd_center/image/",
-    title: "AI R&D Center 画像処理",
-  },
-  {
-    key: "nlp",
-    srcPath: "src/pages/nlp/index.html",
-    cmsPath: "/faculties/research-center/ai_rd_center/nlp/",
-    title: "AI R&D Center NLP",
+    title: "AI R&D Center 研究内容",
   },
   {
     key: "conference-map",

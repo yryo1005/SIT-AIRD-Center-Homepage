@@ -6,3 +6,7 @@ dist/
 # GitHubの単一ファイル上限（100MB）を超えるためリポジトリには含めない。
 # 抽出済みのテキスト・画像は src/ や .reports/ 側に反映済み。
 references/
+
+# 学会予稿・発表資料等の原本（PPTX/PDF）。references/と同様，抽出済みの
+# 内容はsrc/data/research/等に反映済みのためリポジトリには含めない。
+tmp/

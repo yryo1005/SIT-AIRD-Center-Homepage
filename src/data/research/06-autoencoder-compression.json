@@ -1,0 +1,8 @@
+{
+  "title": "Autoencoderを用いた画像の有歪圧縮",
+  "body": "AIを用いて画像を符号語に変換し，オリジナルに近い画像を復元する研究です．",
+  "image": {
+    "src": "research/autoencoder-mnist-result.jpg",
+    "alt": "Autoencoderによる画像復元実験の結果（オリジナル・復元・圧縮後の比較）"
+  }
+}
