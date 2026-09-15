@@ -83,6 +83,13 @@ h1, h2, h3, h4 {
 
 p {
   margin: 0 0 1em;
+  text-align: justify;
+  text-justify: inter-ideograph;
+}
+
+li {
+  text-align: justify;
+  text-justify: inter-ideograph;
 }
 
 .container {
@@ -255,9 +262,13 @@ p {
   background: var(--surface);
 }
 
+.news-photo-slider figure .mini-carousel {
+  height: 140px;
+}
+
 .news-photo-slider img {
   width: 100%;
-  height: 140px;
+  height: 100%;
   object-fit: cover;
 }
 
@@ -648,6 +659,33 @@ p {
   background: var(--bg-soft);
 }
 
+/*
+ * トップページの施設カード用の小さな写真グリッド。
+ * 1枚の大きな写真の代わりに複数の小さな写真を並べることで，
+ * 部屋数の多さが一目で伝わり，かつ縦に大きく場所を取らないようにする。
+ */
+.facility-preview-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 2px;
+  border-bottom: 1px solid var(--line);
+}
+
+.facility-preview-grid img {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+}
+
+@media (max-width: 480px) {
+  .facility-preview-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .facility-preview-grid img:nth-child(n + 4) {
+    display: none;
+  }
+}
+
 .facility-room-photo-empty {
   display: flex;
   align-items: center;
@@ -655,6 +693,76 @@ p {
   color: var(--text-faint);
   font-family: var(--mono);
   font-size: 13px;
+}
+
+/*
+ * ミニカルーセル：複数の候補画像を横スライドで切り替える共通部品。
+ * ニュース写真帯・施設の部屋写真など，自動的に画像が切り替わる箇所すべてで
+ * 使う。track内には全画像を並べておき，transformで表示位置をずらすことで
+ * ハードカットではなくスムーズな横移動になる。本体タップで全画像一覧の
+ * ポップアップを開く（ボタン部分のクリックはポップアップを開かない）。
+ */
+.mini-carousel {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.mini-carousel-track {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.45s ease;
+}
+
+.mini-carousel-track img {
+  flex: 0 0 100%;
+  width: 100%;
+  height: 100%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mini-carousel-track {
+    transition: none;
+  }
+}
+
+.mini-carousel-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--text);
+  font-size: 17px;
+  line-height: 1;
+  cursor: pointer;
+  z-index: 1;
+}
+
+.mini-carousel-prev {
+  left: 8px;
+}
+
+.mini-carousel-next {
+  right: 8px;
+}
+
+/* 施設の部屋写真は，.card-img（aspect-ratio: 16/10）を枠として使い，
+   その中身をミニカルーセルで埋める。画像はobject-fit: containで統一。 */
+.facility-room-photo {
+  padding: 0;
+  overflow: hidden;
+}
+
+.facility-room-photo .mini-carousel-track img {
+  object-fit: contain;
+  background: var(--bg-soft);
 }
 
 .card-body {
@@ -790,18 +898,10 @@ p {
    --------------------------------------------------------------------- */
 .faculty-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
   gap: 1px;
   background: var(--line);
   border: 1px solid var(--line);
-}
-
-@media (max-width: 900px) {
-  .faculty-grid { grid-template-columns: repeat(2, 1fr); }
-}
-
-@media (max-width: 560px) {
-  .faculty-grid { grid-template-columns: 1fr; }
 }
 
 .faculty-card {
@@ -855,11 +955,12 @@ p {
   margin: 2px 0 0;
 }
 
-.faculty-card a.faculty-link {
+.faculty-card .faculty-link {
   display: inline-block;
-  font-size: 16px;
+  font-size: 15px;
   margin-top: 10px;
   color: var(--accent);
+  white-space: nowrap;
 }
 
 @media (max-width: 560px) {
@@ -1214,12 +1315,30 @@ body.media-modal-open {
   display: none;
 }
 
-.media-modal-carousel-img {
+.media-modal-carousel-viewport {
+  width: 100%;
+  max-height: 420px;
+  overflow: hidden;
+  background: var(--bg-soft);
+}
+
+.media-modal-carousel-track {
+  display: flex;
+  transition: transform 0.45s ease;
+}
+
+.media-modal-carousel-track img {
+  flex: 0 0 100%;
   width: 100%;
   max-height: 420px;
   object-fit: contain;
-  display: block;
   background: var(--bg-soft);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .media-modal-carousel-track {
+    transition: none;
+  }
 }
 
 .media-modal-carousel-btn {

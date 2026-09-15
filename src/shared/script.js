@@ -179,25 +179,107 @@ function renderNewsList() {
 }
 
 /**
- * 一定時間おきに，与えられた複数の画像を順番に切り替える関数．
- * ニュース写真帯・施設ページの各部屋写真など，1つの枠に複数の候補画像がある
- * 箇所で共通して使う。1枚しかない場合は何もしない（切り替えは発生しない）。
+ * 複数枚の候補画像を横スライドで切り替える「ミニカルーセル」のHTML断片を作る関数．
+ * ニュース写真帯・施設ページの各部屋写真など，サイト内で自動的に画像が
+ * 切り替わる箇所すべてで共通して使う型。画像が1枚しかない場合は
+ * 左右ボタンを表示しない（ただし同じ構造のHTMLを返すため，呼び出し側の
+ * 処理を画像枚数で分岐させる必要はない）。
  * 引数:
- *   imgEl (HTMLImageElement): 表示先の<img>要素。
- *   images (Array<{url: string, alt: string}>): 切り替える画像の一覧。
- *   intervalMs (number): 切り替え間隔（ミリ秒）。
+ *   images (Array<{url: string, alt: string}>): 表示する画像の一覧。
+ * 戻り値:
+ *   string: `.mini-carousel`要素のHTML文字列。
+ */
+function buildMiniCarouselHtml(images) {
+  const track = images
+    .map((image) => `<img src="${escapeHtml(image.url)}" alt="${escapeHtml(image.alt || "")}" referrerpolicy="no-referrer">`)
+    .join("");
+  const buttons = images.length > 1
+    ? `
+      <button type="button" class="mini-carousel-btn mini-carousel-prev" aria-label="前の画像">‹</button>
+      <button type="button" class="mini-carousel-btn mini-carousel-next" aria-label="次の画像">›</button>
+    `
+    : "";
+  return `
+    <div class="mini-carousel" role="button" tabindex="0" aria-label="タップすると全ての写真を一覧表示します">
+      <div class="mini-carousel-track">${track}</div>
+      ${buttons}
+    </div>
+  `;
+}
+
+/**
+ * `buildMiniCarouselHtml()`で生成したミニカルーセル1つに，動作を仕込む関数．
+ * - 左右ボタンでの手動切り替え
+ * - ハードカットではなく，横方向へのスムーズなスライド（CSS transitionによる
+ *   transform変化。実体は常にtrack内の全画像を並べておき，表示位置を
+ *   ずらしているだけなので，画像の差し替え（src変更）は発生しない）
+ * - 画像が2枚以上ある場合の一定時間おきの自動切り替え（prefers-reduced-motion
+ *   が有効な場合は自動切り替えしない。手動でのボタン操作は常に可能）
+ * - カルーセル本体（ボタン以外の部分）をクリック／タップすると，
+ *   全画像の一覧をポップアップ（モーダル）で表示する
+ * 引数:
+ *   carouselEl (HTMLElement): `.mini-carousel`要素。
+ *   options (object):
+ *     intervalMs (number): 自動切り替えの間隔（ミリ秒）。
+ *     onOpen (function(number): void): カルーセル本体クリック時に，
+ *       現在表示中の画像インデックスを引数として呼ばれるコールバック。
  * 戻り値: なし．
  */
-function startImageRotation(imgEl, images, intervalMs = 4000) {
-  if (!imgEl || images.length <= 1) return;
+function wireMiniCarousel(carouselEl, { intervalMs = 4000, onOpen } = {}) {
+  const track = carouselEl.querySelector(".mini-carousel-track");
+  const prevBtn = carouselEl.querySelector(".mini-carousel-prev");
+  const nextBtn = carouselEl.querySelector(".mini-carousel-next");
+  const count = track.children.length;
   const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  if (prefersReducedMotion) return;
   let index = 0;
-  setInterval(() => {
-    index = (index + 1) % images.length;
-    imgEl.src = images[index].url;
-    imgEl.alt = images[index].alt || "";
-  }, intervalMs);
+  let timer = null;
+
+  /**
+   * 指定したインデックスの画像へスライド移動する関数（内部use）。
+   * 引数: i (number): 移動先のインデックス（範囲外はループする）。
+   * 戻り値: なし。
+   */
+  function setIndex(i) {
+    index = ((i % count) + count) % count;
+    track.style.transform = `translateX(-${index * 100}%)`;
+  }
+
+  function startTimer() {
+    if (count <= 1 || prefersReducedMotion) return;
+    timer = setInterval(() => setIndex(index + 1), intervalMs);
+  }
+
+  function resetTimer() {
+    if (timer) clearInterval(timer);
+    startTimer();
+  }
+
+  if (prevBtn) {
+    prevBtn.addEventListener("click", (event) => {
+      event.stopPropagation();
+      setIndex(index - 1);
+      resetTimer();
+    });
+  }
+  if (nextBtn) {
+    nextBtn.addEventListener("click", (event) => {
+      event.stopPropagation();
+      setIndex(index + 1);
+      resetTimer();
+    });
+  }
+
+  if (onOpen) {
+    carouselEl.addEventListener("click", () => onOpen(index));
+    carouselEl.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        onOpen(index);
+      }
+    });
+  }
+
+  startTimer();
 }
 
 /**
@@ -231,7 +313,7 @@ function renderNewsPhotoSlider() {
     .map(
       (item) => `
         <figure>
-          <img src="${escapeHtml(item.resolvedImages[0].url)}" alt="${escapeHtml(item.resolvedImages[0].alt)}" referrerpolicy="no-referrer">
+          ${buildMiniCarouselHtml(item.resolvedImages)}
           <figcaption>${escapeHtml(formatNewsDateLabel(item.date))} ${escapeHtml(item.title)}</figcaption>
         </figure>
       `
@@ -243,11 +325,22 @@ function renderNewsPhotoSlider() {
     track.innerHTML += track.innerHTML;
   }
   // 複製後のtrack全体から<figure>を取得し，オリジナル・複製の両方に
-  // 画像切り替えを仕込む（複製分もユーザーの目に触れるため）。
+  // ミニカルーセルの動作を仕込む（複製分もユーザーの目に触れるため）。
   track.querySelectorAll("figure").forEach((figure, index) => {
     const item = withImages[index % withImages.length];
-    const img = figure.querySelector("img");
-    startImageRotation(img, item.resolvedImages, 4000 + (index % withImages.length) * 350);
+    const carousel = figure.querySelector(".mini-carousel");
+    wireMiniCarousel(carousel, {
+      intervalMs: 4000 + (index % withImages.length) * 350,
+      onOpen: (startIndex) => {
+        openMediaModal({
+          eyebrow: formatNewsDateLabel(item.date),
+          title: item.title,
+          bodyLines: [],
+          images: item.resolvedImages,
+          startIndex,
+        });
+      },
+    });
   });
 }
 
@@ -348,7 +441,7 @@ function renderConferenceMap() {
         title: `${pref.name}`,
         bodyLines: images.length > 0
           ? []
-          : ["この都道府県の写真はまだ登録されていません。", `src/assets/images/conference-map/${key}/ に画像ファイルを追加すると，ここに表示されます。`],
+          : ["この都道府県の写真はまだ登録されていません．", `src/assets/images/conference-map/${key}/ に画像ファイルを追加すると，ここに表示されます．`],
         images,
       });
     };
@@ -379,9 +472,9 @@ function renderFacilityRooms() {
   const imagesByRoom = groupImagesByFolder("facility");
 
   list.innerHTML = FACILITY_ROOMS.map((room) => {
-    const images = imagesByRoom[room.key] ?? [];
+    const images = (imagesByRoom[room.key] ?? []).map((url) => ({ url, alt: `${room.name}の様子` }));
     const photo = images.length > 0
-      ? `<img class="card-img" data-room-key="${escapeHtml(room.key)}" src="${escapeHtml(images[0])}" alt="${escapeHtml(room.name)}の様子" referrerpolicy="no-referrer">`
+      ? `<div class="card-img facility-room-photo" data-room-key="${escapeHtml(room.key)}">${buildMiniCarouselHtml(images)}</div>`
       : `<div class="card-img facility-room-photo-empty" aria-hidden="true">写真準備中</div>`;
     return `
       <div class="info-card facility-room-card">
@@ -395,11 +488,23 @@ function renderFacilityRooms() {
     `;
   }).join("");
 
-  list.querySelectorAll("img[data-room-key]").forEach((img) => {
-    const key = img.getAttribute("data-room-key");
+  list.querySelectorAll(".facility-room-photo[data-room-key]").forEach((wrapper) => {
+    const key = wrapper.getAttribute("data-room-key");
     const room = FACILITY_ROOMS.find((r) => r.key === key);
     const images = (imagesByRoom[key] ?? []).map((url) => ({ url, alt: `${room.name}の様子` }));
-    startImageRotation(img, images, 5000);
+    const carousel = wrapper.querySelector(".mini-carousel");
+    wireMiniCarousel(carousel, {
+      intervalMs: 5000,
+      onOpen: (startIndex) => {
+        openMediaModal({
+          eyebrow: room.caption,
+          title: room.name,
+          bodyLines: [],
+          images,
+          startIndex,
+        });
+      },
+    });
   });
 }
 
@@ -428,8 +533,10 @@ function ensureMediaModal() {
     <div class="media-modal" role="dialog" aria-modal="true" aria-labelledby="media-modal-title">
       <button type="button" class="media-modal-close" aria-label="閉じる">×</button>
       <div class="media-modal-carousel" hidden>
+        <div class="media-modal-carousel-viewport">
+          <div class="media-modal-carousel-track"></div>
+        </div>
         <button type="button" class="media-modal-carousel-btn media-modal-carousel-prev" aria-label="前の画像">‹</button>
-        <img class="media-modal-carousel-img" src="" alt="">
         <button type="button" class="media-modal-carousel-btn media-modal-carousel-next" aria-label="次の画像">›</button>
         <p class="media-modal-carousel-count"></p>
       </div>
@@ -462,7 +569,9 @@ function ensureMediaModal() {
 
 /**
  * モーダル内の画像カルーセルを，指定した相対量だけ進める（または戻す）関数．
- * 画像が1枚以下の場合は何もしない。
+ * 画像が1枚以下の場合は何もしない。track内の全画像はすでにDOM上に
+ * 並んでいるため，画像の差し替えは発生せず，CSS transitionによって
+ * 表示位置がスムーズに横移動する。
  * 引数:
  *   delta (number): 進める枚数（-1で前へ，+1で次へ）。
  * 戻り値: なし．
@@ -475,18 +584,15 @@ function stepMediaModalCarousel(delta) {
 }
 
 /**
- * モーダル内の画像カルーセルの現在フレーム（画像・カウンタ表示）を更新する関数．
+ * モーダル内の画像カルーセルの現在の表示位置（カウンタ表示）を更新する関数．
  * 引数: なし．
  * 戻り値: なし．
  */
 function renderMediaModalCarouselFrame() {
   const overlay = ensureMediaModal();
-  const img = overlay.querySelector(".media-modal-carousel-img");
+  const track = overlay.querySelector(".media-modal-carousel-track");
   const count = overlay.querySelector(".media-modal-carousel-count");
-  const current = mediaModalState.images[mediaModalState.currentIndex];
-  if (!current) return;
-  img.src = current.url;
-  img.alt = current.alt || "";
+  track.style.transform = `translateX(-${mediaModalState.currentIndex * 100}%)`;
   count.textContent = mediaModalState.images.length > 1
     ? `${mediaModalState.currentIndex + 1} / ${mediaModalState.images.length}`
     : "";
@@ -504,9 +610,12 @@ function renderMediaModalCarouselFrame() {
  *     bodyLines (Array<string>): 本文の各行（空行は無視される）。
  *     referenceLines (Array<string> | undefined): 文献情報。1件ずつ番号付きリストで表示する。
  *     images (Array<{url: string, alt: string}>): 表示する画像一覧。
+ *     startIndex (number | undefined): 最初に表示する画像のインデックス
+ *       （ミニカルーセルをタップして開いた場合，タップ時点で表示していた
+ *       画像から一覧を開始するために使う）。省略時は0。
  * 戻り値: なし．
  */
-function openMediaModal({ eyebrow, title, meta, bodyLines, referenceLines, images }) {
+function openMediaModal({ eyebrow, title, meta, bodyLines, referenceLines, images, startIndex }) {
   const overlay = ensureMediaModal();
 
   overlay.querySelector(".media-modal-eyebrow").textContent = eyebrow ?? "";
@@ -535,11 +644,15 @@ function openMediaModal({ eyebrow, title, meta, bodyLines, referenceLines, image
   const resolvedImages = (images ?? []).filter((image) => Boolean(image.url));
 
   const carousel = overlay.querySelector(".media-modal-carousel");
+  const track = overlay.querySelector(".media-modal-carousel-track");
   const prevBtn = overlay.querySelector(".media-modal-carousel-prev");
   const nextBtn = overlay.querySelector(".media-modal-carousel-next");
   if (resolvedImages.length > 0) {
     mediaModalState.images = resolvedImages;
-    mediaModalState.currentIndex = 0;
+    mediaModalState.currentIndex = Math.min(Math.max(startIndex ?? 0, 0), resolvedImages.length - 1);
+    track.innerHTML = resolvedImages
+      .map((image) => `<img src="${escapeHtml(image.url)}" alt="${escapeHtml(image.alt || "")}" referrerpolicy="no-referrer">`)
+      .join("");
     carousel.hidden = false;
     const multiple = resolvedImages.length > 1;
     prevBtn.hidden = !multiple;
@@ -547,6 +660,7 @@ function openMediaModal({ eyebrow, title, meta, bodyLines, referenceLines, image
     renderMediaModalCarouselFrame();
   } else {
     mediaModalState.images = [];
+    track.innerHTML = "";
     carousel.hidden = true;
   }
 
