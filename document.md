@@ -1,6 +1,6 @@
 # document.md：AI R&D Center Webサイト再構築プロジェクト（v2：Vite + GitHub Pages + iframe）
 
-本ドキュメントは，本プロジェクトで作成したプログラム・文書の役割，依存関係，実行方法を記述する．対応する指示書は`.orders/order_001.md`（v1：ArtisCMS3直接貼り付け版），`.orders/order_002.md`（v2：Vite + GitHub Pages + iframe版），`.orders/order_003.md`（v2追加修正：公開URL修正・画像表示修正），`.orders/order_004.md`（ガイダンス資料の取り込み），`.orders/order_005.md`（デザイン刷新・内部リンクのモード切り替え），`.orders/order_006.md`（表示内容の精査・修正），実施レポートは`.reports/report_001.md`〜`.reports/report_006.md`である．
+本ドキュメントは，本プロジェクトで作成したプログラム・文書の役割，依存関係，実行方法を記述する．対応する指示書は`.orders/order_001.md`（v1：ArtisCMS3直接貼り付け版），`.orders/order_002.md`（v2：Vite + GitHub Pages + iframe版），`.orders/order_003.md`（v2追加修正：公開URL修正・画像表示修正），`.orders/order_004.md`（ガイダンス資料の取り込み），`.orders/order_005.md`（デザイン刷新・内部リンクのモード切り替え），`.orders/order_006.md`（表示内容の精査・修正），`.orders/order_007.md`（コンテンツのデータファイル駆動化：ニュース），実施レポートは`.reports/report_001.md`〜`.reports/report_007.md`である．
 
 `.orders/order_004.md`への対応で，`references/`配下のガイダンス資料（PPTX/PDF）から抽出したテキスト・画像を，公式サイトの内容を削除・改変することなくサイトへ追加した．写真は`src/assets/images/`に配置し，Viteの標準アセットパイプラインで処理される．`references/`自体は大容量ファイル（最大255MB，GitHubの単一ファイル上限100MBを超過）を含むため`.gitignore`に追加し，リポジトリには含めていない（詳細は`.reports/report_004.md`を参照）．
 
@@ -239,3 +239,18 @@ npm run preview
 - **研究内容の追加**：`references/`のガイダンス資料から，組込AI（圧力センサー姿勢判定AI）・画像処理（Autoencoderによる有歪圧縮）・NLP（学内案内ChatBot「AI英太郎」）の研究テーマを追加した。第三者由来の可能性がある画像（ストック写真・書籍表紙等）は使用していない。
 
 詳細な確認結果は`.reports/report_006.md`を参照。
+
+## 16. コンテンツのデータファイル駆動化（order_007）の内容
+
+`.orders/order_007.md`は，非技術者でもニュースを更新できるよう，コンテンツ（データ）と表示（HTML/CSS/JS）を分離する指示である。今回はニュースのみに適用し，学生紹介・卒研一覧は次フェーズで同じ仕組みを適用する前提で設計案のみ提示した。
+
+- **`src/data/news.json`を新設**：既存の21件のニュース項目を1件も欠落・改変させずに移行した。各要素は`date`（`YYYY-MM-DD`）・`title`・`summary`・`image`（URLまたは`null`）・`imageAlt`の5フィールドを持つ。
+- **`src/shared/script.js`がnews.jsonを読み込んで描画**：`import newsData from "../data/news.json"`でViteの標準機能により直接importし（追加ライブラリ不要），`renderNewsTicker()`（トップページの最新5件のティッカー）と`renderNewsList()`（ニュースページの全件一覧，`#news-count`の件数表示も自動更新）の2関数で描画する。`escapeHtml()`でtitle/summaryをエスケープしてから`innerHTML`に挿入するため，本文に`&`や`<`等の記号が含まれても安全である。
+- **表示順は配列の記載順に依存しない**：`sortNewsByDateDesc()`が常に`date`の降順で並べ替えるため，`news.json`へは新しい記事をどこに追加してもよい。
+- **`src/pages/news/index.html`・`src/pages/top/index.html`のハードコードされたニュース行/ティッカー項目を削除**し，`<div class="news-list" data-source="news-json"></div>`・`<div class="news-ticker-track" data-source="news-json"></div>`という空のマウント先に置き換えた。
+- **README.mdに非技術者向けの更新手順を追加**：`src/data/news.json`の編集方法，1件追加する具体例（コピペ用），保存後にpushすればGitHub Actionsで自動デプロイされる旨を記載した。
+- 実装後，実際にテスト項目を追加（22件になり最新項目として先頭に表示されること，件数表示が自動更新されることを確認）→削除（21件に戻ることを確認）する自己検証を行った。
+
+次フェーズ向けに，同じ設計思想にもとづく`src/data/students.json`（学生紹介・コラム）・`src/data/theses.json`（過去の卒研テーマ・予稿一覧，`category`は`journal`/`international`/`domestic`の3種で基礎研究ページの既存アコーディオン分類と対応）のデータ構造案を`.reports/report_007.md`に記載した（今回は未実装）。
+
+詳細な確認結果は`.reports/report_007.md`を参照。
