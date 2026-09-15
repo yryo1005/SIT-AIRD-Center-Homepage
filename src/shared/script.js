@@ -9,6 +9,37 @@
 import newsData from "../data/news.json";
 
 /**
+ * src/assets/images/以下の全画像ファイルを，ビルド時にVite側で
+ * ハッシュ付きの本番URLへ解決するための一覧．news.jsonのimageフィールドは
+ * "news/xxx.jpg"のようにsrc/assets/images/からの相対パスで指定するため，
+ * JSON内の文字列参照だけではVite/Rollupが画像をビルド成果物へ含めてくれない
+ * （HTML内のimg src="/src/..."と異なり，JSON値は静的なアセット参照として
+ * 解析されないため）。この問題を避けるため，import.meta.globで
+ * 画像を静的にインポートしておき，ファイル名から実際のURLを引けるようにする．
+ */
+const newsImageAssets = import.meta.glob("../assets/images/**/*", {
+  eager: true,
+  import: "default",
+});
+
+/**
+ * news.jsonのimageフィールド（"news/xxx.jpg"等，src/assets/images/以下の
+ * 相対パス）を，実際に読み込み可能な画像URLへ変換する関数．
+ * "http"で始まる場合は外部URLとしてそのまま返す（非技術者が外部画像URLを
+ * 直接貼り付けた場合の後方互換のため）．
+ * 引数:
+ *   imagePath (string | null | undefined): news.jsonのimageフィールドの値．
+ * 戻り値:
+ *   string | null: 解決済みの画像URL．該当画像が見つからない場合はnull．
+ */
+function resolveNewsImage(imagePath) {
+  if (!imagePath) return null;
+  if (/^https?:\/\//.test(imagePath)) return imagePath;
+  const key = `../assets/images/${imagePath.replace(/^\/+/, "")}`;
+  return newsImageAssets[key] ?? null;
+}
+
+/**
  * HTML特殊文字をエスケープする関数．news.json内のtitle/summaryは
  * innerHTMLで挿入するため，&/</>等が含まれていても壊れないようにする．
  * 引数:
@@ -81,9 +112,10 @@ function renderNewsList() {
 
   list.innerHTML = sorted
     .map((item) => {
-      const hasImage = Boolean(item.image);
+      const imageUrl = resolveNewsImage(item.image);
+      const hasImage = Boolean(imageUrl);
       const thumb = hasImage
-        ? `<img class="news-thumb" src="${escapeHtml(item.image)}" alt="${escapeHtml(item.imageAlt || "")}" referrerpolicy="no-referrer">`
+        ? `<img class="news-thumb" src="${escapeHtml(imageUrl)}" alt="${escapeHtml(item.imageAlt || "")}" referrerpolicy="no-referrer">`
         : "";
       return `
         <div class="news-row${hasImage ? " has-thumb" : ""}">
@@ -115,7 +147,9 @@ function renderNewsPhotoSlider() {
   const track = document.querySelector('.news-photo-slider-track[data-source="news-json"]');
   if (!track) return;
 
-  const withImages = sortNewsByDateDesc(newsData).filter((item) => Boolean(item.image));
+  const withImages = sortNewsByDateDesc(newsData)
+    .map((item) => ({ ...item, resolvedImage: resolveNewsImage(item.image) }))
+    .filter((item) => Boolean(item.resolvedImage));
   if (withImages.length === 0) {
     const wrapper = track.closest(".news-photo-slider");
     if (wrapper) wrapper.hidden = true;
@@ -126,7 +160,7 @@ function renderNewsPhotoSlider() {
     .map(
       (item) => `
         <figure>
-          <img src="${escapeHtml(item.image)}" alt="${escapeHtml(item.imageAlt || item.title)}" referrerpolicy="no-referrer">
+          <img src="${escapeHtml(item.resolvedImage)}" alt="${escapeHtml(item.imageAlt || item.title)}" referrerpolicy="no-referrer">
           <figcaption>${escapeHtml(formatNewsDateLabel(item.date))} ${escapeHtml(item.title)}</figcaption>
         </figure>
       `

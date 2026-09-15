@@ -121,7 +121,6 @@ export const LINK_MODES = ["github-pages", "cms"];
 export const INTERNAL_LINKS = [
   ...PAGES.map((p) => ({ key: p.key })),
   { key: "top", hash: "faculty" },
-  { key: "top", hash: "contact" },
 ];
 
 /**

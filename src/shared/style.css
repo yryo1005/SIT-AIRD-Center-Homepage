@@ -577,6 +577,53 @@ p {
 }
 
 /*
+ * 各分野ページの「研究内容」カードを縦1列にスタックするためのコンテナ。
+ * card-gridの多列グリッドとは異なり，常に1カラムで上から下へ積む。
+ */
+.theme-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/*
+ * .theme-stack内の.info-card/.cardは，広い画面では画像を左，
+ * タイトル・本文を右に並べる横並びレイアウトにして，
+ * タイトル→本文→画像という構造を1枚のカードで見渡しやすくする。
+ */
+.theme-stack > .info-card,
+.theme-stack > .card {
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+
+.theme-stack > .info-card > .card-img,
+.theme-stack > .card > .card-img {
+  width: 320px;
+  flex: 0 0 320px;
+  aspect-ratio: 4 / 3;
+}
+
+.theme-stack > .info-card > .card-body,
+.theme-stack > .card > .card-body {
+  flex: 1 1 320px;
+  min-width: 260px;
+}
+
+@media (max-width: 780px) {
+  .theme-stack > .info-card,
+  .theme-stack > .card {
+    flex-direction: column;
+  }
+
+  .theme-stack > .info-card > .card-img,
+  .theme-stack > .card > .card-img {
+    width: 100%;
+    flex-basis: auto;
+  }
+}
+
+/*
  * .card は「クリックするとページ遷移する」ブロック専用のクラスとする
  * （<a class="card">として使う）。ホバーで枠線がアクセント色になり，
  * わずかに浮き上がることで，クリック可能であることを示す。

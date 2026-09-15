@@ -29,7 +29,6 @@
         <a href="../image/index.html" data-link="image">画像処理</a>
         <a href="../nlp/index.html" data-link="nlp" aria-current="page">NLP</a>
         <a href="../reinforcement/index.html" data-link="reinforcement">強化学習</a>
-        <a href="../top/index.html#contact" data-link="top" data-hash="contact">お問い合わせ</a>
       </nav>
     </div>
   </header>
@@ -46,9 +45,9 @@
 
     <section class="section">
       <div class="container">
-        <div class="card-grid">
+        <div class="theme-stack">
           <div class="info-card">
-            <img class="card-img" src="https://www.shonan-it.ac.jp/faculties/media/izuka.png" alt="観光地レビューを用いた分散表現研究のイメージ" referrerpolicy="no-referrer">
+            <img class="card-img" src="/src/assets/images/research/izuka.png" alt="観光地レビューを用いた分散表現研究のイメージ" referrerpolicy="no-referrer">
             <div class="card-body">
               <p class="card-tag">Research Theme</p>
               <h3>観光地レビューを用いた観光地の分散表現手法</h3>
@@ -56,40 +55,19 @@
             </div>
           </div>
           <div class="info-card">
+            <img class="card-img" src="/src/assets/images/research/ai-eitaro-architecture.png" alt="AI Eitaroのシステム構成図（Whisper・RAG・LLM・Zonosを組み合わせ，Flask・Ngrokでサーバー化）">
             <div class="card-body">
               <p class="card-tag">Research Theme · D1</p>
               <h3>特定のキャラクター性を有する学校案内ChatBot「AI Eitaro」</h3>
               <p>ニューラルネットワークを用いたChatBotの普及を背景に、特定のキャラクター性を持たせた学校案内ChatBotの実装に取り組んでいる研究です。学生からの「4年生に進級するまでに何単位必要なの？」といった質問に、AIが学内情報にもとづいて音声で回答します。</p>
               <p>音声認識にWhisper、学内情報の検索にRAG（Retrieval-Augmented Generation）、回答文の生成にChatGPT、文書解析にYomitoku、音声合成にZonosを組み合わせ、Flask・Ngrokでサーバー化することで、外部の端末からも利用できる構成としています。回答は、質問文に類似した学生便覧等の文章をRAGで検索し、その内容にもとづいて生成する仕組みです。</p>
+              <img src="/src/assets/images/research/ai-eitaro-demo.png" alt="AI Eitaroの動作デモ画面（ノートPC上でのチャット画面）" style="width: 100%; border-radius: var(--radius); margin-top: 12px;">
             </div>
           </div>
         </div>
       </div>
     </section>
   </main>
-
-  <footer class="site-footer">
-    <div class="container">
-      <div class="footer-grid">
-        <nav class="footer-nav" aria-label="フッターナビゲーション">
-          <a href="../top/index.html" data-link="top">トップ</a>
-          <a href="../news/index.html" data-link="news">ニュース</a>
-          <a href="../facility/index.html" data-link="facility">施設</a>
-          <a href="../basic-research/index.html" data-link="basic-research">基礎研究</a>
-          <a href="../embedded/index.html" data-link="embedded">組込AI</a>
-          <a href="../image/index.html" data-link="image">画像処理</a>
-          <a href="../nlp/index.html" data-link="nlp">NLP</a>
-          <a href="../reinforcement/index.html" data-link="reinforcement">強化学習</a>
-          <a href="https://www.shonan-it.ac.jp/outline/contact/" target="_top">お問い合わせ</a>
-        </nav>
-        <address class="footer-address">
-          湘南工科大学 情報学部<br>
-          〒251-8511 神奈川県藤沢市辻堂西海岸1-1-25
-        </address>
-      </div>
-      <p>Copyright © Shonan Institute of Technology, All Rights Reserved.</p>
-    </div>
-  </footer>
 
   <script type="module" src="/src/shared/script.js"></script>
 </body>
