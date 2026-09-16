@@ -73,6 +73,42 @@ function resolveImagePath(imagePath) {
 }
 
 /**
+ * PDF等，画像以外の配布用ファイル（src/assets/documents/）の静的インポート一覧．
+ * imageAssetsと同じ理由（HTML内の<a href>属性はVite/Rollupの標準アセット解析
+ * 対象に含まれないため）で，import.meta.globにより静的にインポートしておく．
+ */
+const documentAssets = import.meta.glob("../assets/documents/**/*", {
+  eager: true,
+  import: "default",
+});
+
+/**
+ * "ai-rd-center-poster.pdf"等，src/assets/documents/以下の相対パスを，
+ * 実際にダウンロード可能なURLへ変換する関数．
+ * 引数:
+ *   documentPath (string): src/assets/documents/からの相対パス．
+ * 戻り値:
+ *   string | null: 解決済みのURL．該当ファイルが見つからない場合はnull．
+ */
+function resolveDocumentPath(documentPath) {
+  if (!documentPath) return null;
+  const key = `../assets/documents/${documentPath.replace(/^\/+/, "")}`;
+  return documentAssets[key] ?? null;
+}
+
+/**
+ * data-download属性を持つ要素のhrefを，resolveDocumentPath()で解決した
+ * 実際のURLへ書き換える．HTML側では`<a data-download="xxx.pdf" href="#">`
+ * のように仮のhrefを置いておく．
+ */
+function wireDownloadLinks() {
+  document.querySelectorAll("[data-download]").forEach((el) => {
+    const url = resolveDocumentPath(el.getAttribute("data-download"));
+    if (url) el.setAttribute("href", url);
+  });
+}
+
+/**
  * HTML特殊文字をエスケープする関数．JSON等から読み込んだ文字列は
  * innerHTMLで挿入するため，&/</>等が含まれていても壊れないようにする．
  * 引数:
@@ -896,5 +932,6 @@ document.addEventListener("DOMContentLoaded", () => {
   renderFacilityRooms();
   initTabs();
   initAccordions();
+  wireDownloadLinks();
   initIframeHeightReporter();
 });

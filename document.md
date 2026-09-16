@@ -13,7 +13,7 @@ v2では，v1で採用していた「build.jsでCSS/JSをインライン展開�
 | パス | 役割 |
 | :--- | :--- |
 | `src/shared/style.css` | 全ページ共通のスタイルシート．**白背景＋青アクセントのライトテーマ**（order_005でダークテーマから刷新）．Fraunces／Inter／IBM Plex Monoのタイポグラフィ，カード・アコーディオン・ミニカルーセル・モーダル等のコンポーネントを定義する． |
-| `src/shared/script.js` | 全ページ共通のスクリプト．ナビゲーション開閉，スクロール進捗バー，ニュース／研究内容／学生の声のJSON描画，アコーディオン開閉，ミニカルーセル（複数画像の横スライド切り替え），汎用ポップアップ（`openMediaModal()`），学会行脚マップ・施設ページのフォルダアップロード対応描画に加え，「iframe埋め込み時に本文の高さを親ウィンドウへ通知する処理」を含む．文字のみのニューストリッカーとタブ切り替えUIはorder_010・013で廃止済み． |
+| `src/shared/script.js` | 全ページ共通のスクリプト．ナビゲーション開閉，スクロール進捗バー，ニュース／研究内容／学生の声のJSON描画，アコーディオン開閉，ミニカルーセル（複数画像の横スライド切り替え），汎用ポップアップ（`openMediaModal()`），学会行脚マップ・施設ページのフォルダアップロード対応描画，PDF等ダウンロード資料のリンク解決（`wireDownloadLinks()`，order_017）に加え，「iframe埋め込み時に本文の高さを親ウィンドウへ通知する処理」を含む．文字のみのニューストリッカーとタブ切り替えUIはorder_010・013で廃止済み． |
 | `src/pages/*/index.html` | 各ページのHTMLソース（現在7ページ：top／news／facility／basic-research（表示名は「研究内容」）／conference-map／join（在学生の方へ）／for-highschool（高校生の方へ）。組込AI・画像処理・NLPの3ページはorder_014で研究内容ページへ統合され廃止）．`<!DOCTYPE html>`から始まる完全なHTMLドキュメントで，`<head>`の最初の子要素として`<meta charset="UTF-8">`を宣言する．内部リンクはすべてルート相対パス＋`target="_top"`． |
 | `index.html`（リポジトリルート） | ローカル確認専用の開発用インデックスページ．各ページへのリンク一覧を表示する．CMS・本番公開の対象ではない． |
 | `vite.config.js` | Viteのビルド設定．`src/pages/*/index.html`（7ファイル）とルートの`index.html`を複数エントリとして`dist/`へビルドする．GitHub Pagesのサブパス公開に対応するため，`mode`が`"production"`のとき（`vite build`・`vite preview`）のみ`base`を`/SIT-AIRD-Center-Homepage/`に設定する． |
@@ -25,6 +25,8 @@ v2では，v1で採用していた「build.jsでCSS/JSをインライン展開�
 | `package.json` / `package-lock.json` | Vite関連の依存関係定義．`npm run dev` / `npm run build` / `npm run preview` / `npm run generate:cms-shells` / `npm run verify:cms-shells` / `npm run verify:cms-shells:live`を提供する． |
 | `README.md` | フォルダ構成，配信アーキテクチャ，ベースURLの単一管理（site.config.js），ローカルでの動作確認方法，本番ビルド手順，GitHub Pages公開URL，cms-shellsの使い方，ArtisCMS3側URLとの対応表（運用者記入欄）を記載する運用者向け文書． |
 | `src/assets/images/faculty/`・`src/assets/images/facility/` | ガイダンス資料（PPTX）から元画質のまま抽出した教員写真・施設写真．Viteの標準アセットパイプラインで処理される（order_004対応で追加）． |
+| `src/assets/images/join/` | 在学生の方へページの活動写真（東京ゲームショウ・BBQ・ボウリング大会・忘年会・OB会）．`import.meta.glob`経由で参照される（order_017対応で追加）． |
+| `src/assets/documents/` | ダウンロード資料（紹介ポスターPDF等）．`src/shared/script.js`の`resolveDocumentPath()`/`wireDownloadLinks()`により，`data-download`属性を持つ`<a>`要素のhrefが実際のURLへ書き換えられる（order_017対応で追加）． |
 | `.orders/order_001.md`〜`.orders/order_005.md` | 本プロジェクトの指示書（v1，v2，v2追加修正，ガイダンス資料取り込み，デザイン刷新）． |
 | `.reports/report_001.md`〜`.reports/report_005.md` | 本プロジェクトの実施レポート（v1，v2，v2追加修正，ガイダンス資料取り込み，デザイン刷新）． |
 | `scripts/set-link-mode.js` | `data-link`/`data-hash`属性から，内部リンクのhref/targetをgithub-pages/cmsモードに応じて一括書き換えるスクリプト（order_005対応で追加）． |
@@ -408,3 +410,14 @@ npm run preview
 - **サイト全体の更新**：`site.config.js`のPAGESに`join`・`for-highschool`を追加し，全7ページのヘッダーナビに新規2ページへのリンクを追加した。トップページの「参加案内」セクションは，詳細を重複記載せず，要約文＋新設2ページへのリンクカード2枚に簡略化した。`cms-shells/join.html`・`cms-shells/for-highschool.html`を生成し，README.mdの公開URL一覧・cms-shellsマッピング表・ローカル開発URL一覧・フォルダ対応表を7ページ分に更新し，「学生の声を追加・編集する方法」セクションを新設した（出典未確認の個人情報を追加しないよう明記）。
 
 いずれの変更も，公式サイト由来の実績一覧・教員情報・入試関連の確定事項を新たに記載することはしていない。詳細な確認結果は`.reports/report_016.md`を参照。
+
+## 26. 紹介ポスターのダウンロードボタン，活動サイクルのプロセス図，活動写真6点の反映，AIコース詳細情報の追加（order_017）の内容
+
+`.orders/order_017.md`は，チャットでの4点の指示（ポスターPDFの追加，プロセス図の参考画像アップロード，活動写真6点のアップロード，ガイダンス資料からの抜粋テキスト）である。
+
+- **紹介ポスターのダウンロードボタン**：アップロードされた`AIRDCenter_ポスター.pdf`を`src/assets/documents/ai-rd-center-poster.pdf`として配置し，トップページ・在学生の方へページ・高校生の方へページのヒーロー部にダウンロードボタンを追加した。`<a href="...">`はVite/Rollupの標準アセット解析の対象に含まれない（画像の`import.meta.glob`問題と同種の制約）ため，`src/shared/script.js`に`documentAssets`（`import.meta.glob("../assets/documents/**/*")`）・`resolveDocumentPath()`・`wireDownloadLinks()`を新設し，`data-download`属性からビルド後の実URLへ実行時に解決する方式とした。
+- **活動のサイクルのプロセス図**：アップロードされたスクリーンショット（ガイダンス資料のスライド）を確認し，「個人作業→（毎週）ゼミ→（毎月）進捗報告→（毎学期）ポスター発表」，各段階への「教員・先輩からのフィードバック」というプロセス構造を読み取った。画像をそのまま貼るのではなく，サイトのデザイン（白背景＋青アクセント）に合わせたHTML/CSSの図（`.process-flow`／`.process-step`／`.process-arrow`／`.process-feedback`，`src/shared/style.css`に新設）として再構成し，在学生の方へページの「活動のサイクル」セクションに配置した。
+- **活動写真6点の反映**：アップロードされた6枚（東京ゲームショウ・BBQ・ヨギボーゾーン・忘年会・ボウリング大会・OB会）について，1枚ずつ内容を確認したうえで配置した。東京ゲームショウ・BBQ・忘年会・ボウリング大会・OB会の5枚は`src/assets/images/join/`に配置し，在学生の方へページの「対外的な活動・メンバー同士の交流」セクションに`.photo-strip`として追加した。ヨギボーゾーンの写真は，既存の施設ページのフォルダアップロードの仕組み（`src/assets/images/facility/yogibo-zone/`）にそのまま追加し，コード変更なしで施設ページのミニカルーセルに反映されるようにした。いずれもImageMagickで圧縮（JPEG形式へ変換，quality 85前後）してから配置した。
+- **AIコース詳細情報の追加**：ガイダンス資料からの抜粋テキスト（授業時間，実施体系，履修条件，参加者に求められること，メリット，求める人物像・求めない人物像，まとめ，Python学習教材リンク）を，在学生の方へページに新設した「AIコースについて」セクション（アコーディオン）へ，原文の意味を変えずに転記した。あわせて，「参加方法」セクションの記述を，具体的な履修要件（情報学部／工学部それぞれの必須科目）が判明したことを踏まえて更新した（指導教員への相談を促す記述は維持）。
+
+いずれの変更も，ユーザーから提供された一次資料（PDF・画像・抜粋テキスト）の内容をそのまま反映したものであり，新たな推測や誇張を加えていない。詳細な確認結果は`.reports/report_017.md`を参照。
