@@ -40,6 +40,9 @@
         <p class="page-hero-lead">AI R&amp;D Centerのメンバーが学会発表・研究会等で訪れた都道府県の地図です．色が付いている都道府県をクリックすると，現地の写真を見ることができます．</p>
       </div>
     </section>
+    <div class="container">
+      <nav class="toc-nav" data-toc aria-label="このページの目次"></nav>
+    </div>
 
     <section class="section">
       <div class="container">
@@ -48,10 +51,8 @@
             <svg class="jp-map" data-source="conference-map" viewBox="0 0 520 520" role="img" aria-label="日本地図（都道府県別）"></svg>
           </div>
           <div class="conf-map-side">
-            <div class="conf-map-legend">
-              <p><span class="conf-map-dot conf-map-dot--filled" aria-hidden="true"></span>写真が登録されている都道府県</p>
-              <p><span class="conf-map-dot" aria-hidden="true"></span>まだ写真が登録されていない都道府県</p>
-            </div>
+            <p class="conf-map-spotlight-caption">学会の様子</p>
+            <div class="conf-map-spotlight" data-source="conference-map-spotlight" aria-label="学会の様子（ランダム表示）"></div>
           </div>
         </div>
       </div>

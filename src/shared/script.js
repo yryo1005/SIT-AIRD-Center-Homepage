@@ -9,6 +9,7 @@
  */
 import { PREFECTURES } from "../data/prefectures.js";
 import { FACILITY_ROOMS } from "../data/facility-rooms.js";
+import { PUBLICATION_CATEGORIES } from "../data/publications.js";
 
 /**
  * src/data/news/以下の個別ニュースJSONファイルを，ビルド時に静的インポートする。
@@ -634,6 +635,125 @@ function renderFacilityRooms() {
   });
 }
 
+/**
+ * 業績一覧（学術論文誌／査読あり国際会議／国内学会プロシーディング）を，
+ * 閉じた状態のアコーディオンとして描画する関数．
+ * `src/data/publications.js`のPUBLICATION_CATEGORIESを唯一のデータソースとし，
+ * トップページ・研究内容ページの両方の`.accordion-group[data-source="publications-json"]`
+ * 要素へ同じ内容を描画する（order_018対応：これまで両ページに別々にハードコードされて
+ * いた同一内容を統一）．該当要素がないページでは何もしない．
+ * 引数: なし．
+ * 戻り値: なし．
+ */
+function renderPublicationsAccordion() {
+  const containers = document.querySelectorAll('.accordion-group[data-source="publications-json"]');
+  if (containers.length === 0) return;
+
+  containers.forEach((container, containerIndex) => {
+    container.innerHTML = PUBLICATION_CATEGORIES.map((category) => {
+      const panelId = `panel-${category.key}-${containerIndex}`;
+      const items = category.items
+        .map((item) => `<li>${escapeHtml(item)}</li>`)
+        .join("");
+      return `
+        <div class="accordion-item">
+          <button class="accordion-trigger" aria-expanded="false" aria-controls="${panelId}">
+            <span>${escapeHtml(category.label)}（${category.items.length}件）</span>
+            <span class="chevron">▸</span>
+          </button>
+          <div class="accordion-panel" id="${panelId}">
+            <ol>${items}</ol>
+          </div>
+        </div>
+      `;
+    }).join("");
+  });
+}
+
+/**
+ * 学会行脚マップページのサイドパネルに，全都道府県分の学会写真をランダムな順序で
+ * 一定時間おきに切り替え表示するミニカルーセルを描画する関数（order_018対応）．
+ * 既存の共通ミニカルーセル部品（左右ボタン・スムーズな横スライド・タップで
+ * 全画像ポップアップ）をそのまま利用する．該当要素がないページ／写真が
+ * 1枚も登録されていない場合は何もしない．
+ * 引数: なし．
+ * 戻り値: なし．
+ */
+function renderConferenceMapSpotlight() {
+  const container = document.querySelector('.conf-map-spotlight[data-source="conference-map-spotlight"]');
+  if (!container) return;
+
+  const imagesByPrefecture = groupImagesByFolder("conference-map");
+  const allImages = [];
+  Object.keys(imagesByPrefecture).forEach((key) => {
+    const pref = PREFECTURES.find((p) => p.key === key);
+    imagesByPrefecture[key].forEach((url) => {
+      allImages.push({ url, alt: pref ? `${pref.name}での学会の様子` : "学会の様子" });
+    });
+  });
+
+  if (allImages.length === 0) {
+    container.hidden = true;
+    return;
+  }
+
+  // Fisher-Yatesシャッフル：表示のたびに順序をランダム化する
+  for (let i = allImages.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [allImages[i], allImages[j]] = [allImages[j], allImages[i]];
+  }
+
+  container.innerHTML = buildMiniCarouselHtml(allImages);
+  const carousel = container.querySelector(".mini-carousel");
+  wireMiniCarousel(carousel, {
+    intervalMs: 4000,
+    onOpen: (startIndex) => {
+      openMediaModal({
+        eyebrow: "Conference Map",
+        title: "学会の様子",
+        bodyLines: [],
+        images: allImages,
+        startIndex,
+      });
+    },
+  });
+}
+
+/**
+ * 各ページ上部（ページヒーロー直下）に，そのページ内の見出し（h2）へジャンプする
+ * 目次ナビゲーションを自動生成する関数（order_018対応）．手作業で目次を書くと
+ * 見出しの追加・変更時に食い違いが生じるため，実際のDOM構造（各セクションの
+ * h2要素）から動的に生成する．`[data-toc]`を持つ要素がないページでは何もしない．
+ * 引数: なし．
+ * 戻り値: なし．
+ */
+function initTableOfContents() {
+  const containers = document.querySelectorAll("[data-toc]");
+  if (containers.length === 0) return;
+
+  const headings = Array.from(document.querySelectorAll("main .section-head-text > h2"));
+  if (headings.length === 0) return;
+
+  const items = headings.map((heading, index) => {
+    if (!heading.id) {
+      heading.id = `section-${index + 1}`;
+    }
+    const section = heading.closest(".section");
+    if (section && !section.id) {
+      section.id = heading.id;
+    }
+    return { id: heading.id, label: heading.textContent.trim() };
+  });
+
+  const linksHtml = items
+    .map((item) => `<a href="#${item.id}">${escapeHtml(item.label)}</a>`)
+    .join("");
+
+  containers.forEach((container) => {
+    container.innerHTML = linksHtml;
+  });
+}
+
 /** モーダル内の画像カルーセルの現在の表示位置を保持する状態。 */
 const mediaModalState = {
   images: [],
@@ -929,9 +1049,12 @@ document.addEventListener("DOMContentLoaded", () => {
   renderResearchItems();
   renderStudentVoices();
   renderConferenceMap();
+  renderConferenceMapSpotlight();
   renderFacilityRooms();
+  renderPublicationsAccordion();
   initTabs();
   initAccordions();
   wireDownloadLinks();
+  initTableOfContents();
   initIframeHeightReporter();
 });

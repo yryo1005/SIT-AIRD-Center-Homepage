@@ -69,18 +69,20 @@
       </div>
     </section>
 
+    <div class="container">
+      <nav class="toc-nav" data-toc aria-label="このページの目次"></nav>
+    </div>
+
     <section class="section">
       <div class="container">
         <div class="section-head">
           <div class="section-head-text">
             <p class="section-label">Why AI R&amp;D Center</p>
             <h2>AI R&amp;D Centerの特徴</h2>
-            <p class="section-lead">情報学部やデータサイエンス学部は増えましたが，人工知能を学びの柱に据える専攻は，日本ではまだ希少です．</p>
           </div>
         </div>
         <div class="notice-panel">
           <p class="mt-0">AIは，スポーツや生物，ロボット，言語など，あらゆる分野の「興味関心」と組み合わせることができる汎用性の高い技術です．AI R&amp;D Centerには，アイデアを形にする実践的な環境と，一人ひとりの「やりたい」を強力にバックアップする支援体制や教員陣が揃っています．研究室や廊下で気軽に話せるアットホームな環境があり，先生と学生の距離の近さが挑戦の土台になっています．先輩やOBとの縦のつながりも強く，数百万円規模の計算機やハイスペックなGPU環境など，AIエンジニアや研究者を目指す学生にとって充実した資源が整っています．</p>
-          <p>湘南工科大学では2027年4月，情報学部情報学科に「人工知能専攻」（定員45名）を新設予定です．数理科学とデータサイエンスを基盤に，機械学習や深層学習の理論と技術を実践的に修得し，画像認識や自然言語処理への応用を通じてAIエンジニアを育成する専攻として位置づけられており，AI R&amp;D Centerでの活動とも深く関わる分野です．</p>
         </div>
       </div>
     </section>
@@ -128,6 +130,20 @@
       </div>
     </section>
 
+    <section class="section">
+      <div class="container">
+        <div class="section-head">
+          <div class="section-head-text">
+            <p class="section-label">Publications</p>
+            <h2>業績一覧（全42件）</h2>
+            <p class="section-lead">分類ごとに開閉できます．件数が多いため，必要な区分を開いてご覧ください．詳しい業績一覧は研究内容ページにも掲載しています．</p>
+          </div>
+          <span class="section-index">02 / Publications</span>
+        </div>
+        <div class="accordion-group" data-source="publications-json"></div>
+      </div>
+    </section>
+
     <section class="section" id="faculty">
       <div class="container">
         <div class="section-head">
@@ -136,7 +152,7 @@
             <h2>指導教員</h2>
             <p class="section-lead">6名の教員がセンターの活動を指導しています．各氏名から個別プロフィールページを確認できます．</p>
           </div>
-          <span class="section-index">02 / People</span>
+          <span class="section-index">03 / People</span>
         </div>
         <div class="faculty-grid">
           <a class="faculty-card" href="https://www.shonan-it.ac.jp/teachers/informatics/h-ninomiya/" target="_top">
@@ -148,7 +164,7 @@
               <span class="faculty-link">個別プロフィールを見る →</span>
             </div>
           </a>
-          <a class="faculty-card" href="https://www.shonan-it.ac.jp/teachers/information/t-saito/" target="_top">
+          <a class="faculty-card" href="https://www.shonan-it.ac.jp/teachers/informatics/t-saito/" target="_top">
             <img class="faculty-photo" src="/src/assets/images/faculty/saito-tomohiko.jpeg" alt="齋藤友彦教授の写真" loading="lazy">
             <div class="faculty-body">
               <p class="faculty-role">教授</p>
@@ -205,7 +221,7 @@
             <h2>施設</h2>
             <p class="section-lead">AI R&amp;D Centerには，メンバーが研究活動に没頭できるいくつかの部屋があります．</p>
           </div>
-          <span class="section-index">03 / Space</span>
+          <span class="section-index">04 / Space</span>
         </div>
         <div class="card-grid">
           <a class="card facility-preview-card" href="../facility/index.html" data-link="facility">
@@ -235,7 +251,7 @@
             <h2>活動内容</h2>
             <p class="section-lead">組込AI・画像処理・NLP・基礎理論など，あらゆる分野でAIの調査・開発に取り組んでいます．</p>
           </div>
-          <span class="section-index">04 / Research</span>
+          <span class="section-index">05 / Research</span>
         </div>
         <div class="card-grid">
           <a class="card facility-preview-card" href="../basic-research/index.html" data-link="basic-research">
@@ -265,15 +281,9 @@
             <h2>参加案内</h2>
             <p class="section-lead">AI R&amp;D Centerは学生が主体となって活動しているセンターです．AIの調査・開発に興味のある学生の参加を歓迎しています．</p>
           </div>
-          <span class="section-index">05 / Join</span>
+          <span class="section-index">06 / Join</span>
         </div>
-        <div class="notice-panel">
-          <p class="mt-0">
-            活動は指導教員のもとで，研究内容ページで紹介しているいずれかのテーマに取り組む形で進められます．参加を検討している方・興味を持った高校生の方は，それぞれ下記のページをご覧ください．
-          </p>
-        </div>
-
-        <div class="card-grid" style="margin-top: 20px;">
+        <div class="card-grid">
           <a class="card" href="../join/index.html" data-link="join">
             <div class="card-body">
               <p class="card-tag">For Students</p>
@@ -286,7 +296,7 @@
             <div class="card-body">
               <p class="card-tag">For High School Students</p>
               <h3>高校生の方へ</h3>
-              <p>AI R&amp;D Centerでの活動や，2027年新設予定の人工知能専攻との関わりを，専門知識がなくても分かるように紹介しています．</p>
+              <p>AI R&amp;D Centerでの活動を，専門知識がなくても分かるように紹介しています．</p>
               <span class="card-link">詳しく見る →</span>
             </div>
           </a>
@@ -302,7 +312,7 @@
             <h2>紹介動画</h2>
             <p class="section-lead">湘南工科大学公式YouTubeチャンネルで公開されている，情報学部に関する紹介動画です．</p>
           </div>
-          <span class="section-index">06 / Videos</span>
+          <span class="section-index">07 / Videos</span>
         </div>
         <div class="video-grid">
           <figure class="video-card">
@@ -311,7 +321,7 @@
             </div>
             <figcaption>
               <p class="video-title">2027年4月、新しい情報学部 情報学科の学びへ【人工知能専攻】</p>
-              <p class="text-muted">2027年4月に新設予定の「人工知能専攻」を紹介する大学公式動画です．</p>
+              <p class="text-muted">湘南工科大学の学部・学科再編に関する大学公式動画です．詳しくは大学公式サイトをご確認ください．</p>
             </figcaption>
           </figure>
           <figure class="video-card">
