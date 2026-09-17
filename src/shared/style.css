@@ -410,6 +410,13 @@ li {
   flex-wrap: wrap;
 }
 
+.hero-actions-audience {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-left: auto;
+}
+
 .page-hero {
   padding: 52px 0 40px;
   border-bottom: 1px solid var(--line);
@@ -444,6 +451,65 @@ li {
   border-color: var(--accent);
   color: var(--accent);
   text-decoration: none;
+}
+
+/* ---------------------------------------------------------------------
+   年間スケジュール（縦型タイムライン）
+   --------------------------------------------------------------------- */
+.year-timeline {
+  margin-top: 24px;
+  border-left: 2px solid var(--line);
+  padding-left: 24px;
+}
+
+.year-timeline-item {
+  position: relative;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.year-timeline-item:last-child {
+  border-bottom: none;
+}
+
+.year-timeline-item::before {
+  content: "";
+  position: absolute;
+  left: -29px;
+  top: 20px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+.year-timeline-period {
+  margin: 0 0 4px;
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--accent-dim);
+}
+
+.year-timeline-body {
+  margin: 0;
+  color: var(--text-dim);
+}
+
+.field-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 14px 0 0;
+}
+
+.field-tags span {
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent-dim);
+  font-family: var(--mono);
+  font-size: 11.5px;
 }
 
 .section,
