@@ -4,5 +4,9 @@
   "image": {
     "src": "research/aicenter003.jpg",
     "alt": "顔置き換えシステムのイメージ"
+  },
+  "demo": {
+    "label": "推論ノートブックを見る（GitHub，要ローカル環境構築）",
+    "url": "https://github.com/yryo1005/identity-anonymizer/blob/master/notebooks/03_inference_image.ipynb"
   }
 }

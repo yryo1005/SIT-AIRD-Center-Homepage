@@ -4,5 +4,9 @@
   "image": {
     "src": "research/oogiri-generation-ai.jpg",
     "alt": "大喜利生成AIの出力をディスプレイで確認している様子"
+  },
+  "demo": {
+    "label": "Colabでデモを体験する",
+    "url": "https://colab.research.google.com/github/yryo1005/WiT-inference/blob/main/inference.ipynb"
   }
 }

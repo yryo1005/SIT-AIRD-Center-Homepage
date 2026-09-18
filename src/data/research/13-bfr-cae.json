@@ -1,5 +1,9 @@
 {
   "title": "ビット反転の耐性を有するCompressive Autoencoder（BFR-CAE）",
   "body": "深層学習を用いた画像符号化手法であるCompressive Autoencoder（CAE）は，画像を潜在表現へ圧縮し復元することで符号化を実現しますが，実際の通信環境では通信路ノイズによるビット反転で潜在表現の情報が破損し，復元画像の品質が低下する課題があります．本研究では，量子化後の潜在表現に対して学習時に意図的なビット反転を導入することで通信路ノイズへの耐性を高めたBit-Flip Robust Compressive Autoencoder（BFR-CAE）を提案しています．高解像度画像データセットDIV2K（800枚）で学習し，Kodakデータセット（24枚）で評価した結果，ビット反転確率（BER）が2%以降では，BFR-CAEが従来のStandard CAEよりも小さい再構成誤差を示し，BERが大きくなるほどその差が拡大することを確認しました．渡邉光喜，山富龍，二宮洋，湘南工科大学AI R&D Center．2026年電子情報通信学会ソサイエティ大会にて発表．",
-  "image": null
+  "image": null,
+  "demo": {
+    "label": "Colabでデモを体験する",
+    "url": "https://colab.research.google.com/github/koki01150124/bfr-cae/blob/main/visualize_result.ipynb"
+  }
 }

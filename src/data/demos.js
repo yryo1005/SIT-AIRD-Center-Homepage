@@ -127,4 +127,14 @@ export const DEMOS = [
       { label: "Colabで体験する", url: "https://colab.research.google.com/github/yryo1005/OpenCampus_Demo/blob/main/OC_SpeechRecognition.ipynb" },
     ],
   },
+  {
+    key: "chuunibyou-ai",
+    title: "中二病文章生成AI",
+    tag: "LSTM",
+    description: "中二病特有の言い回しやセリフを，AIが生成します．Geminiで生成したデータセットをLSTMで学習しています．",
+    apiKeyNote: null,
+    links: [
+      { label: "Colabで体験する", url: "https://colab.research.google.com/github/koki01150124/chuunibyou-ai/blob/main/demo.ipynb" },
+    ],
+  },
 ];

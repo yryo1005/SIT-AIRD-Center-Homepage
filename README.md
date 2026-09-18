@@ -100,13 +100,14 @@
 
 `src/data/research/`フォルダの中に，研究テーマ1件につき1つのJSONファイルを置きます。ファイル名は自由です（他のファイルと重複しなければ構いません）。
 
-中身は次の3項目だけを持つシンプルな形です。
+中身は次の項目を持つシンプルな形です。
 
 ```json
 {
   "title": "大喜利生成AI",
   "body": "「笑いは日常生活で重要な要素です．この笑いをAIで提供できないか」という発想から開始した研究です．画像に対する大喜利を生成するAIシステムを開発しています．",
-  "image": { "src": "research/oogiri-generation-ai.jpg", "alt": "大喜利生成AIの出力をディスプレイで確認している様子" }
+  "image": { "src": "research/oogiri-generation-ai.jpg", "alt": "大喜利生成AIの出力をディスプレイで確認している様子" },
+  "demo": { "label": "Colabでデモを体験する", "url": "https://colab.research.google.com/github/yryo1005/WiT-inference/blob/main/inference.ipynb" }
 }
 ```
 
@@ -115,8 +116,11 @@
 | `title` | 研究テーマの見出し | 必須 |
 | `body` | 研究内容の説明文。複数段落にしたい場合は`\n`で行を分ける | 必須 |
 | `image` | 画像。`src`（`src/assets/images/research/`からの相対パス）と`alt`（説明文）を持つオブジェクト。画像が無い場合は`null` | 必須（無ければ`null`） |
+| `demo` | その研究テーマを実際に試せるデモがある場合のリンク。`label`（リンク文言）と`url`を持つオブジェクト。デモが無い場合はこのキー自体を省略する（order_021対応で追加） | 任意 |
 
 画像を追加したい場合は，画像ファイルを`src/assets/images/research/`フォルダにコピーしてから，`image`にファイル名を含む相対パスを指定してください。
+
+デモへのリンクを追加する場合，Google Colabで直接開けるノートブック（`!git clone`・`!pip install`等の環境構築セルを含む自己完結型のもの）であれば，`https://colab.research.google.com/github/<ユーザー名>/<リポジトリ名>/blob/<ブランチ名>/<ファイルパス>`という形式のURLにしてください。ローカル環境（conda等）の構築が前提で，Colabでそのまま開いても動作しないノートブックの場合は，`label`に「デモを体験する」ではなく「ノートブックを見る（GitHub，要環境構築）」のように，実態と異なる期待を持たせない文言にし，URLも通常のGitHubファイル閲覧ページ（`https://github.com/...`）にしてください。
 
 ### 2. 保存して公開する
 

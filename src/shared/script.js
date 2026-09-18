@@ -257,6 +257,9 @@ function renderResearchItems() {
       const photo = imageUrl
         ? `<img class="card-img" src="${escapeHtml(imageUrl)}" alt="${escapeHtml(item.image.alt || item.title)}" referrerpolicy="no-referrer">`
         : "";
+      const demo = item.demo
+        ? `<p><a class="card-link" href="${escapeHtml(item.demo.url)}" target="_blank" rel="noopener">${escapeHtml(item.demo.label)} →</a></p>`
+        : "";
       return `
         <div class="info-card">
           ${photo}
@@ -264,6 +267,7 @@ function renderResearchItems() {
             <p class="card-tag">Research Theme</p>
             <h3>${escapeHtml(item.title)}</h3>
             ${(item.body ?? "").split("\n").filter((line) => line.trim().length > 0).map((line) => `<p>${escapeHtml(line)}</p>`).join("")}
+            ${demo}
           </div>
         </div>
       `;

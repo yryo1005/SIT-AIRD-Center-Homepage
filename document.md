@@ -460,3 +460,13 @@ npm run preview
 - 両ページに新規セクション「AIデモを体験しよう」を追加した。ページ内目次（`initTableOfContents()`，order_018）は見出し構造から自動生成される仕組みのため，目次への追加は自動的に反映され，手動修正は不要だった。
 
 いずれの変更も，実際にリポジトリの内容を確認したうえで反映したものであり，新たな推測は加えていない。詳細な確認結果は`.reports/report_020.md`を参照。
+
+## 30. 個別研究テーマへのデモリンク追加，AIデモ一覧への追加（order_021）の内容
+
+`.orders/order_021.md`は，3件の研究デモリポジトリを対応する研究紹介に配置し，1件を既存のAIデモ一覧に追加する指示である。
+
+- **研究テーマへのデモリンク追加**：`https://github.com/koki01150124/bfr-cae`（BFR-CAE），`https://github.com/yryo1005/WiT-inference`（大喜利生成AI），`https://github.com/yryo1005/identity-anonymizer`（DeepFakeを用いた顔変換）の内容を確認し，それぞれ対応する既存の研究テーマ（`src/data/research/13-bfr-cae.json`・`04-oogiri-ai.json`・`05-deepfake-vae.json`）に新規`demo`フィールド（`{ label, url }`）を追加した。`renderResearchItems()`（`src/shared/script.js`）を拡張し，`demo`フィールドがある場合に研究カードへリンクを表示するようにした。
+- **リンク先の動作確認と誠実な表現**：`bfr-cae`・`WiT-inference`はいずれもREADMEに「Open in Colab」バッジがあり，ノートブック自体も`!git clone`・`!pip install`等の環境構築セルを含む自己完結型であることをノートブックの中身まで確認したため，Google Colabで直接開けるURL形式（`colab.research.google.com/github/...`）を使用した。一方`identity-anonymizer`の該当ノートブック（`notebooks/03_inference_image.ipynb`）は，READMEにColabバッジが無く，ノートブックの中身もconda環境・学習済み重み・サンプル画像が事前に用意されている前提のコードであり，Colabでそのまま開いても動作しないことを確認した。そのため，この1件のみ「デモを体験する」という表現を避け，「推論ノートブックを見る（GitHub，要ローカル環境構築）」というラベルで通常のGitHubファイル閲覧リンクを使用し，実態と異なる案内をしないようにした。
+- **AIデモ一覧への追加**：`https://github.com/koki01150124/chuunibyou-ai`（中二病文章生成AI）の内容を確認し，Colabバッジ付きの自己完結型ノートブックであることを確認したうえで，`src/data/demos.js`に12件目のデモとして追加した。
+
+いずれの変更も，実際にリポジトリ・ノートブックの中身を確認したうえで，動作するリンクとそうでないリンクを区別して反映しており，新たな推測や誇張は加えていない。詳細な確認結果は`.reports/report_021.md`を参照。
