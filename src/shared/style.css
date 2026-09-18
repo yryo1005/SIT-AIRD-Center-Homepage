@@ -897,6 +897,17 @@ li {
   flex: 1;
 }
 
+.demo-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+}
+
+.demo-api-note {
+  font-size: 13px;
+  color: var(--warn);
+}
+
 .card-link {
   font-size: 16px;
   font-weight: 600;

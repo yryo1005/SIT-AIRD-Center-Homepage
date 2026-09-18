@@ -13,7 +13,7 @@ v2では，v1で採用していた「build.jsでCSS/JSをインライン展開�
 | パス | 役割 |
 | :--- | :--- |
 | `src/shared/style.css` | 全ページ共通のスタイルシート．**白背景＋青アクセントのライトテーマ**（order_005でダークテーマから刷新）．Fraunces／Inter／IBM Plex Monoのタイポグラフィ，カード・アコーディオン・ミニカルーセル・モーダル等のコンポーネントを定義する． |
-| `src/shared/script.js` | 全ページ共通のスクリプト．ナビゲーション開閉，スクロール進捗バー，ニュース／研究内容／学生の声／業績一覧のJSON・データ描画，アコーディオン開閉，ミニカルーセル（複数画像の横スライド切り替え），汎用ポップアップ（`openMediaModal()`），学会行脚マップ・施設ページのフォルダアップロード対応描画，PDF等ダウンロード資料のリンク解決（`wireDownloadLinks()`，order_017），各ページの見出しから自動生成する目次ナビゲーション（`initTableOfContents()`，order_018），学会行脚マップのランダム写真スポットライト（`renderConferenceMapSpotlight()`，order_018）に加え，「iframe埋め込み時に本文の高さを親ウィンドウへ通知する処理」を含む．文字のみのニューストリッカーとタブ切り替えUIはorder_010・013で廃止済み． |
+| `src/shared/script.js` | 全ページ共通のスクリプト．ナビゲーション開閉，スクロール進捗バー，ニュース／研究内容／学生の声／業績一覧／AIデモ一覧のJSON・データ描画，アコーディオン開閉，ミニカルーセル（複数画像の横スライド切り替え），汎用ポップアップ（`openMediaModal()`），学会行脚マップ・施設ページのフォルダアップロード対応描画，PDF等ダウンロード資料のリンク解決（`wireDownloadLinks()`，order_017），各ページの見出しから自動生成する目次ナビゲーション（`initTableOfContents()`，order_018），学会行脚マップのランダム写真スポットライト（`renderConferenceMapSpotlight()`，order_018），AIデモ一覧描画（`renderDemoList()`，order_020）に加え，「iframe埋め込み時に本文の高さを親ウィンドウへ通知する処理」を含む．文字のみのニューストリッカーとタブ切り替えUIはorder_010・013で廃止済み． |
 | `src/pages/*/index.html` | 各ページのHTMLソース（現在7ページ：top／news／facility／basic-research（表示名は「研究内容」）／conference-map／join（在学生の方へ）／for-highschool（高校生の方へ）。組込AI・画像処理・NLPの3ページはorder_014で研究内容ページへ統合され廃止）．`<!DOCTYPE html>`から始まる完全なHTMLドキュメントで，`<head>`の最初の子要素として`<meta charset="UTF-8">`を宣言する．内部リンクはすべてルート相対パス＋`target="_top"`． |
 | `index.html`（リポジトリルート） | ローカル確認専用の開発用インデックスページ．各ページへのリンク一覧を表示する．CMS・本番公開の対象ではない． |
 | `vite.config.js` | Viteのビルド設定．`src/pages/*/index.html`（7ファイル）とルートの`index.html`を複数エントリとして`dist/`へビルドする．GitHub Pagesのサブパス公開に対応するため，`mode`が`"production"`のとき（`vite build`・`vite preview`）のみ`base`を`/SIT-AIRD-Center-Homepage/`に設定する． |
@@ -449,3 +449,14 @@ npm run preview
 - **ページ内目次・セクション番号の整合**：joinページに複数の新規セクションを挿入したことに伴い，既存の`section-index`（01〜09）を整合が取れるよう振り直した。ページ内目次（`initTableOfContents()`，order_018）は見出し構造から自動生成されるため，目次自体の手動修正は不要だった。
 
 いずれの変更も，ユーザーから提供された仕様・テキストをそのまま反映したものであり，新たな推測や未確認の数値は追加していない。詳細な確認結果は`.reports/report_019.md`を参照。
+
+## 29. AIデモ一覧の追加（order_020）の内容
+
+`.orders/order_020.md`は，AI R&D Centerが作成したオープンキャンパス用AIデモ（`https://github.com/yryo1005/OpenCampus_Demo`）の説明とColabリンクを，在学生の方へページ・高校生の方へページに追加する指示である。
+
+- GitHub API・raw.githubusercontent.com経由でリポジトリの内容を確認し，11件のAIデモ（全身ランドマーク検出，AI着色，深度推定，顔ランドマーク検出，顔スタイル変換，表情認識，手書き文字認識，画像生成，音楽生成，セグメンテーション，音声認識）を特定した。うち7件はリアルタイム版（`_RT.ipynb`）も用意されている。各デモの説明文は，対応する`OC_XXX.md`（高校生・実施者向けの操作説明）の記載内容に基づいて作成し，画像生成・音楽生成の2件についてはGemini APIキーが必要である旨を明記した。
+- `src/data/demos.js`（`DEMOS`配列）にデータファイル化し，`renderDemoList()`（`src/shared/script.js`）で，joinページ・for-highschoolページ両方の`.card-grid[data-source="demos-json"]`へ同じ内容を描画するようにした。既存の学生の声・研究内容・業績一覧と同じ「1箇所のデータソースを複数ページで共有する」設計パターンに合わせた。
+- リンク先は，GitHub上のファイル閲覧ページではなく，Google Colabで直接開ける`https://colab.research.google.com/github/<ユーザー名>/<リポジトリ名>/blob/<ブランチ名>/<ファイルパス>`形式のURLとした（「デモを体験する」という目的に最も適した形式のため）。
+- 両ページに新規セクション「AIデモを体験しよう」を追加した。ページ内目次（`initTableOfContents()`，order_018）は見出し構造から自動生成される仕組みのため，目次への追加は自動的に反映され，手動修正は不要だった。
+
+いずれの変更も，実際にリポジトリの内容を確認したうえで反映したものであり，新たな推測は加えていない。詳細な確認結果は`.reports/report_020.md`を参照。

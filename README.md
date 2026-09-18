@@ -199,6 +199,16 @@ JSONファイルの追記やコードの変更は一切不要です。地図上�
 4. `<h2>業績一覧（全42件）</h2>`のような見出し中の総件数は，現状は手打ちの数値です。分類を追加・削除して総件数が変わった場合は，`src/pages/top/index.html`・`src/pages/basic-research/index.html`の両方の見出しを合わせて更新してください。
 5. ファイルを保存し，`git add`・`git commit`・`git push`すると，数分後に両ページに反映されます。
 
+## AIデモ一覧を追加・編集する方法
+
+在学生の方へページ・高校生の方へページの「AIデモを体験しよう」セクションは，`src/data/demos.js`を唯一のデータソースとして共有しています（order_020対応）。ここで紹介しているのは，AI R&D Centerが作成したオープンキャンパス用AIデモ（[`https://github.com/yryo1005/OpenCampus_Demo`](https://github.com/yryo1005/OpenCampus_Demo)）です。
+
+1. `src/data/demos.js`の`DEMOS`配列を編集します。各デモは`{ key, title, tag, description, apiKeyNote, links }`の形です。`links`は`{ label, url }`の配列で，1件目を通常版，2件目以降をリアルタイム版等のバリエーションとして並べます。
+2. リンクURLは，GitHub上のファイル閲覧ページではなく，Google Colabで直接開ける`https://colab.research.google.com/github/<ユーザー名>/<リポジトリ名>/blob/<ブランチ名>/<ファイルパス>`という形式にしてください（「体験する」という目的に合わせるため）。
+3. `apiKeyNote`は，体験にAPIキー等の準備が必要なデモ（画像生成・音楽生成など，Gemini APIキーを使うもの）にのみ設定し，それ以外は`null`にしてください。
+4. 両ページのHTML側は`<div class="card-grid" data-source="demos-json"></div>`という空のマウントポイントになっており，`src/shared/script.js`の`renderDemoList()`が上記データから内容を描画します。
+5. ファイルを保存し，`git add`・`git commit`・`git push`すると，数分後に両ページに反映されます。
+
 ## 配信アーキテクチャ
 
 ```
@@ -230,7 +240,8 @@ project/
 │   │   ├── students/        ← 学生の声のデータ（1件＝1つのJSONファイル。研究内容ページ・在学生の方へページの両方から参照。後述）
 │   │   ├── prefectures.js   ← 学会行脚マップの47都道府県マーカー定義（位置・キー・名前）
 │   │   ├── facility-rooms.js ← 施設ページの部屋定義（キー・名前・説明文）
-│   │   └── publications.js  ← 業績一覧のデータ（トップページ・研究内容ページで共有。後述）
+│   │   ├── publications.js  ← 業績一覧のデータ（トップページ・研究内容ページで共有。後述）
+│   │   └── demos.js         ← AIデモ一覧のデータ（在学生・高校生向けページで共有。後述）
 │   ├── assets/
 │   │   ├── images/
 │   │   │   ├── conference-map/<都道府県キー>/  ← 学会行脚マップの都道府県別写真（後述）

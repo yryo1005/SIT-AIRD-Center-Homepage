@@ -10,6 +10,7 @@
 import { PREFECTURES } from "../data/prefectures.js";
 import { FACILITY_ROOMS } from "../data/facility-rooms.js";
 import { PUBLICATION_CATEGORIES } from "../data/publications.js";
+import { DEMOS } from "../data/demos.js";
 
 /**
  * src/data/news/以下の個別ニュースJSONファイルを，ビルド時に静的インポートする。
@@ -302,6 +303,41 @@ function renderStudentVoices() {
         `;
       })
       .join("");
+  });
+}
+
+/**
+ * AIデモ一覧（`src/data/demos.js`）を描画する関数．
+ * 在学生の方へページ・高校生の方へページの両方の
+ * `.card-grid[data-source="demos-json"]`要素へ，同じ内容を描画する（order_020対応）．
+ * 該当要素がないページでは何もしない．
+ * 引数: なし．
+ * 戻り値: なし．
+ */
+function renderDemoList() {
+  document.querySelectorAll('.card-grid[data-source="demos-json"]').forEach((grid) => {
+    grid.innerHTML = DEMOS.map((demo) => {
+      const links = demo.links
+        .map(
+          (link) =>
+            `<a class="card-link" href="${escapeHtml(link.url)}" target="_blank" rel="noopener">${escapeHtml(link.label)} →</a>`
+        )
+        .join("");
+      const apiNote = demo.apiKeyNote
+        ? `<p class="demo-api-note">※ ${escapeHtml(demo.apiKeyNote)}</p>`
+        : "";
+      return `
+        <div class="info-card">
+          <div class="card-body">
+            <p class="card-tag">${escapeHtml(demo.tag)}</p>
+            <h3>${escapeHtml(demo.title)}</h3>
+            <p>${escapeHtml(demo.description)}</p>
+            ${apiNote}
+            <div class="demo-links">${links}</div>
+          </div>
+        </div>
+      `;
+    }).join("");
   });
 }
 
@@ -1048,6 +1084,7 @@ document.addEventListener("DOMContentLoaded", () => {
   renderNewsPhotoSlider();
   renderResearchItems();
   renderStudentVoices();
+  renderDemoList();
   renderConferenceMap();
   renderConferenceMapSpotlight();
   renderFacilityRooms();
