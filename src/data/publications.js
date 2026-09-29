@@ -11,6 +11,7 @@ export const PUBLICATION_CATEGORIES = [
     label: "学術論文誌",
     items: [
       "Shahrzad Mahboubi, Ryo Yamatomi, and Hiroshi Ninomiya, \"On the Study of Memory-Less quasi-Newton Method with Momentum Term for Neural Network Training\", Nonlinear Theory and Its Applications, IEICE, Vol.13, no.2, pp.271-276, (2022)",
+      "山富龍，マハブービシェヘラザード，二宮洋，\"Warai Transformer: Transformerを用いた画像に対する大喜利生成AI，\" Journal of Signal Processing，vol.30，no.5，pp.173-190，September 2026．https://doi.org/10.2299/jsp.30.173",
     ],
   },
   {
@@ -18,6 +19,7 @@ export const PUBLICATION_CATEGORIES = [
     label: "査読あり国際会議プロシーディング",
     items: [
       "Yamatomi, Ryo, Shahrzad Mahboubi, and Hiroshi Ninomiya. \"Generative Model of Suitable Meme Sentences for Images Using AutoEncoder.\" Pacific Rim International Conference on Artificial Intelligence. Singapore: Springer Nature Singapore, 2023.",
+      "Kai Ishida, Yuma Ikeda, Ryo Yamatomi, \"Deep Learning-Based Vascular Region Estimation from Ultrasound Images,\" Proc. of IEEE International Symposium on Medical Information and Communication Technology, Sep. 2026.",
     ],
   },
   {
@@ -64,6 +66,13 @@ export const PUBLICATION_CATEGORIES = [
       "土屋琴夢，山富龍，マハブービシェヘラザード，二宮 洋，\"適応的慣性項を用いた3次正則化ニュートン法に関する研究，\" 2026年電子情報通信学会総合大会，N-1-01，March 2026",
       "山富龍，マハブービシェヘラザード，二宮 洋，\"ニューラルネットワークによる大喜利の面白さ判定，\" 2026年電子情報通信学会総合大会，N-1-02，March 2026",
       "石田 開，星野 凛，山富 龍，\"機械学習を用いた超音波画像からの血管領域推定，\" 2026年電子情報通信学会，B-19-21，March 2026",
+      "浅井傑，山富龍，二宮洋，\"平均化パラメータスナップショットを用いた反復近似を行う確率的分散減少勾配法，\" 2026年電子情報通信学会ソサエティ大会，N-1-18，September 2026",
+      "渡邉光喜，山富龍，二宮洋，\"ビット反転の耐性を有するCompressive Autoencoder，\" 2026年電子情報通信学会ソサエティ大会，N-1-39，September 2026",
+      "井上來彌，山富龍，二宮洋，\"高次数値積分法を用いたDynamical Inertial Newton法の離散化に関する研究，\" 2026年電子情報通信学会ソサエティ大会，N-1-09，September 2026",
+      "廣瀬大哲，山富龍，マハブービシェヘラザード，二宮洋，\"適応的リプシッツ定数推定に基づく慣性付3次正則化ニュートン法，\" 2026年電子情報通信学会ソサエティ大会，N-1-06，September 2026",
+      "山富龍，二宮洋，\"ディープフェイクとVAEを用いたアイデンティティ保持型匿名化，\" 2026年電子情報通信学会ソサエティ大会，N-1-40，September 2026",
+      "土屋琴夢，マハブービシェヘラザード，二宮洋，\"探索方向の類似度を用いた適応的慣性付3次正則化ニュートン法，\" 2026年電子情報通信学会ソサエティ大会，N-1-05，September 2026",
+      "渡部朔冶，安藤慎吾，\"2DCNNとLSTMを用いた将棋対局者の人間とAIの分類手法，\" 2026年電子情報通信学会ソサエティ大会，N-1-35，September 2026",
     ],
   },
 ];
